@@ -1,0 +1,70 @@
+plugins {
+    id 'java'
+    id 'antlr'
+}
+
+group = 'ai.flexgalaxy'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+configurations {
+    antlrTool
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    antlr "org.antlr:antlr4:4.13.2"
+    antlrTool "org.antlr:antlr4:4.13.2"
+}
+
+tasks.register('generateCppParser', JavaExec) {
+    group = "build"
+    description = "Generate C++ parser from ANTLR4 grammars"
+    mainClass = "org.antlr.v4.Tool"
+    classpath = configurations.antlrTool
+    args = [
+            "-o", "build/generated/Cql2/Cpp",
+            "-Dlanguage=Cpp",
+            "-listener",
+            "-visitor",
+            "-package", "cql2g4cpp",
+            "src/main/resources/Cql2.g4"
+    ]
+}
+
+tasks.register('generateJavaParser', JavaExec) {
+    group = "build"
+    description = "Generate Java parser from ANTLR4 grammars"
+    mainClass = "org.antlr.v4.Tool"
+    classpath = configurations.antlrTool
+    args = [
+            "-o", "build/generated/Cql2/Java",
+            "-Dlanguage=Java",
+            "-listener",
+            "-visitor",
+            "-package", "ai.flexgalaxy.Cql2g4",
+            "src/main/resources/Cql2.g4"
+    ]
+}
+
+tasks.named('compileJava') {
+    dependsOn 'generateJavaParser', 'generateCppParser'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'build/generated/Cql2/Java'
+        }
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
