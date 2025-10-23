@@ -1,23 +1,29 @@
 grammar Cql2;
 
+AND : 'AND' | 'and';
+OR : 'OR' | 'or';
+NOT : 'NOT' | 'not';
+
 //  A CQL2 filter is a logically connected expression of one or more predicates.
 //  Predicates include scalar or comparison predicates, spatial predicates or
 //  temporal predicates.
-booleanExpression : booleanTerm ('OR' booleanTerm)*;
+booleanExpression : booleanTerm (OR booleanTerm)*;
 
-booleanTerm : booleanFactor ('AND' booleanFactor)*;
+booleanTerm : booleanFactor (AND booleanFactor)*;
 
-booleanFactor : 'NOT'? booleanPrimary;
+booleanFactor : NOT? booleanPrimary;
 
 booleanPrimary : function
                | predicate
                | booleanLiteral
-               | '(' booleanExpression ')';
+               | '(' booleanExpression ')'
+               ;
 
 predicate : comparisonPredicate
           | spatialPredicate
           | temporalPredicate
-          | arrayPredicate;
+          | arrayPredicate
+          ;
 
 //  A comparison predicate evaluates if two scalar expression statisfy the
 //  specified comparison operator.  The comparion operators includes an operator
@@ -27,60 +33,73 @@ comparisonPredicate : binaryComparisonPredicate
                     | isLikePredicate
                     | isBetweenPredicate
                     | isInListPredicate
-                    | isNullPredicate;
+                    | isNullPredicate
+                    ;
 
 //  Binary comparison predicate
 binaryComparisonPredicate : scalarExpression
                             comparisonOperator
                             scalarExpression;
 
-scalarExpression : characterClause
+scalarExpression : propertyName
+                 | function
+                 | characterClause
                  | numericLiteral
                  | instantInstance
-                 | arithmeticExpression
                  | booleanLiteral
-                 | propertyName
-                 | function;
+                 | arithmeticExpression
+                 ;
 
 comparisonOperator :  '='     //  equal
                    | '<' '>'  //  not equal
                    | '<'      //  less than
                    | '>'      //  greater than
                    | '<' '='  //  less than or equal
-                   | '>' '='; //  greater than or equal
+                   | '>' '='  //  greater than or equal
+                   ;
 
 //  LIKE predicate
-isLikePredicate :  characterExpression 'NOT'? 'LIKE' patternExpression;
+LIKE : 'LIKE' | 'like';
+isLikePredicate :  characterExpression NOT? LIKE patternExpression;
 
-patternExpression : 'CASEI' '(' patternExpression ')'
-                  | 'ACCENTI' '(' patternExpression ')'
-                  | characterLiteral;
+CASEI : 'CASEI' | 'casei';
+ACCENTI : 'ACCENTI' | 'accenti';
+patternExpression : CASEI '(' patternExpression ')'
+                  | ACCENTI '(' patternExpression ')'
+                  | CharacterLiteral
+                  ;
 
 //  BETWEEN predicate
-isBetweenPredicate : numericExpression 'NOT'? 'BETWEEN'
-                     numericExpression 'AND' numericExpression;
+BETWEEN : 'BETWEEN' | 'between';
+isBetweenPredicate : numericExpression BETWEEN numericExpression AND numericExpression
+                   | numericExpression NOT BETWEEN numericExpression AND numericExpression;
 
-numericExpression : arithmeticExpression
+numericExpression : propertyName
+                  | arithmeticExpression
                   | numericLiteral
-                  | propertyName
-                  | function;
+                  | function
+                  ;
 
 //  IN LIST predicate
-isInListPredicate : scalarExpression 'NOT'? 'IN' '(' inList ')';
+IN : 'IN' | 'in';
+isInListPredicate : scalarExpression NOT? IN '(' inList ')';
 
 inList : scalarExpression (',' scalarExpression)*;
 
 //  IS NULL predicate
-isNullPredicate : isNullOperand 'IS' 'NOT'? 'NULL';
+IS : 'IS' | 'is';
+NULL : 'NULL' | 'null';
+isNullPredicate : isNullOperand IS NOT? NULL;
 
-isNullOperand : characterClause
+isNullOperand : propertyName
+              | characterClause
               | numericLiteral
               | temporalInstance
               | spatialInstance
               | arithmeticExpression
-              | '(' booleanExpression ')'  // we use '(', ')' to avoid loop: boolExpr -> boolTerm -> boolFactor -> boolPrimary -> predicate -> isNull -> boolExpr
-              | propertyName
-              | function;
+              | '(' booleanExpression ')'  // DIFF we use '(', ')' to avoid loop: boolExpr -> boolTerm -> boolFactor -> boolPrimary -> predicate -> isNull -> boolExpr
+              | function
+              ;
 
 //  A spatial predicate evaluates if two spatial expressions satisfy the
 //  condition implied by a standardized spatial comparison function.  If the
@@ -91,21 +110,23 @@ spatialPredicate : spatialFunction '(' geomExpression ',' geomExpression ')';
 //  NOTE: The buffer functions (DWITHIN and BEYOND) are not included because
 //        these are outside the scope of a 'simple' core for CQL2.  These
 //        can be added as extensions.
-spatialFunction : 'S_INTERSECTS'
-                | 'S_EQUALS'
-                | 'S_DISJOINT'
-                | 'S_TOUCHES'
-                | 'S_WITHIN'
-                | 'S_OVERLAPS'
-                | 'S_CROSSES'
-                | 'S_CONTAINS';
+spatialFunction : 'S_INTERSECTS' | 's_intersects'
+                | 'S_EQUALS' | 's_equals'
+                | 'S_DISJOINT' | 's_disjoint'
+                | 'S_TOUCHES' | 's_touches'
+                | 'S_WITHIN' | 's_within'
+                | 'S_OVERLAPS' | 's_overlaps'
+                | 'S_CROSSES' | 's_crosses'
+                | 'S_CONTAINS' | 's_contains'
+                ;
 
 //  A geometric expression is a property name of a geometry-valued property,
 //  a geometric literal (expressed as WKT) or a function that returns a
 //  geometric value.
 geomExpression : spatialInstance
                | propertyName
-               | function;
+               | function
+               ;
 
 //  A temporal predicate evaluates if two temporal expressions satisfy the
 //  condition implied by a standardized temporal comparison function.  If the
@@ -114,25 +135,28 @@ geomExpression : spatialInstance
 temporalPredicate : temporalFunction
                     '(' temporalExpression ',' temporalExpression ')';
 
-temporalExpression : temporalInstance
+temporalExpression :
+                     temporalInstance
                    | propertyName
-                   | function;
+                   | function
+                   ;
 
-temporalFunction : 'T_AFTER'
-                 | 'T_BEFORE'
-                 | 'T_CONTAINS'
-                 | 'T_DISJOINT'
-                 | 'T_DURING'
-                 | 'T_EQUALS'
-                 | 'T_FINISHEDBY'
-                 | 'T_FINISHES'
-                 | 'T_INTERSECTS'
-                 | 'T_MEETS'
-                 | 'T_METBY'
-                 | 'T_OVERLAPPEDBY'
-                 | 'T_OVERLAPS'
-                 | 'T_STARTEDBY'
-                 | 'T_STARTS';
+temporalFunction : 'T_AFTER' | 't_after'
+                 | 'T_BEFORE' | 't_before'
+                 | 'T_CONTAINS' | 't_contains'
+                 | 'T_DISJOINT' | 't_disjoint'
+                 | 'T_DURING' | 't_during'
+                 | 'T_EQUALS' | 't_equals'
+                 | 'T_FINISHEDBY' | 't_finishedby'
+                 | 'T_FINISHES' | 't_finishes'
+                 | 'T_INTERSECTS' | 't_intersects'
+                 | 'T_MEETS' | 't_meets'
+                 | 'T_METBY' | 't_metby'
+                 | 'T_OVERLAPPEDBY' | 't_overlappedby'
+                 | 'T_OVERLAPS' | 't_overlaps'
+                 | 'T_STARTEDBY' | 't_startedby'
+                 | 'T_STARTS' | 't_starts'
+                 ;
 
 //  An array predicate evaluates if two array expressions satisfy the
 //  condition implied by a standardized array comparison function.  If the
@@ -143,7 +167,8 @@ arrayPredicate : arrayFunction
 
 arrayExpression : array
                 | propertyName
-                | function;
+                | function
+                ;
 
 //  An array is a parentheses-delimited, comma-separated list of array
 //  elements.
@@ -161,50 +186,57 @@ arrayElement : characterClause
              | arithmeticExpression
              | booleanExpression
              | propertyName
-             | function;
+             | function
+             ;
 
-arrayFunction : 'A_EQUALS'
-              | 'A_CONTAINS'
-              | 'A_CONTAINEDBY'
-              | 'A_OVERLAPS';
+arrayFunction : 'A_EQUALS' | 'a_equals'
+              | 'A_CONTAINS' | 'a_contains'
+              | 'A_CONTAINEDBY' | 'a_containedby'
+              | 'A_OVERLAPS' | 'a_overlaps'
+              ;
 
 //  An arithmetic expression is an expression composed of an arithmetic
 //  operand (a property name, a number or a function that returns a number),
 //  an arithmetic operators (+,-,*,/,%,div,^) and another arithmetic operand.
-arithmeticExpression : arithmeticTerm (arithmeticOperatorPlusMinus arithmeticTerm)*;
+arithmeticExpression : arithmeticTerm (Sign arithmeticTerm)*;  // TODO: should we use Sign or ArithmeticOperatorPlusMinus?
+Sign : '+' | '-';
+ArithmeticOperatorPlusMinus : '+' | '-';
 
-arithmeticOperatorPlusMinus : '+' | '-';
-
-arithmeticTerm : powerTerm (arithmeticOperatorMultDiv powerTerm)?;
+arithmeticTerm : powerTerm (arithmeticOperatorMultDiv powerTerm)*;
 
 arithmeticOperatorMultDiv : '*' | '/' | '%' | 'div';
 
 powerTerm : arithmeticFactor ('^' arithmeticFactor)?;
 
 arithmeticFactor : '(' arithmeticExpression ')'
-                 | '-'? arithmeticOperand;
+                 | arithmeticOperand
+                 | Sign arithmeticOperand
+                 ;
 
 arithmeticOperand : numericLiteral
                   | propertyName
-                  | function;
+                  | function
+                  ;
 
 //  Definition of a PROPERTYNAME
 //  Production copied from: https://www.w3.org/TR/REC-xml/// sec-common-syn,
 //                          'Names and Tokens'.
-propertyName : identifier | '\'' identifier '\'';
+propertyName : Identifier | '"' Identifier '"';
 
-identifier : IdentifierStart identifierPart?;
+Identifier : IdentifierStart IdentifierPart*
+           | IdentifierStart;
 
 COMBINING_MARKS : [\u0300-\u036F];  //  combining and diacritical marks
 TIE_SYMBOLS : [\u203F\u2040];       //  ‿ and ⁀
 
-identifierPart : IdentifierStart
+fragment IdentifierPart : IdentifierStart
                | '.'                    //  '\u002E'
                | Digit                  //  0-9
                | COMBINING_MARKS
-               | TIE_SYMBOLS;
+               | TIE_SYMBOLS
+               ;
 
-IdentifierStart : [\u003A]              //  colon
+fragment IdentifierStart : [\u003A]              //  colon
                 | [\u005F]              //  underscore
                 | [\u0041-\u005A]    //  A-Z
                 | [\u0061-\u007A]    //  a-z
@@ -219,47 +251,49 @@ IdentifierStart : [\u003A]              //  colon
                 | [\u3001-\uD7FF]    //  See note 4.
                 | [\uF900-\uFDCF]    //  See note 5.
                 | [\uFDF0-\uFFFD]    //  See note 6.
-                | [\u{10000}-\u{EFFFF}]; //  See note 7.
+                | [\u{10000}-\u{EFFFF}]  //  See note 7.
+                ;
 
 //  See: https://unicode-table.com/en/blocks/
 
 // =============================================================================//
 //  Definition of a FUNCTION
 // =============================================================================//
-function : IdentifierStart '(' ')'
-         | IdentifierStart '(' argumentList ')';
+function : Identifier '(' ')'
+         | Identifier '(' argumentList ')';
 
 argumentList : argument (',' argument)*;
 
-argument : characterClause
+argument : propertyName
+         | characterClause
          | numericLiteral
          | temporalInstance
          | spatialInstance
          | array
          | arithmeticExpression
          | booleanExpression
-         | propertyName
-         | function;
+         | function
+         ;
 
 //  Character expression
 characterExpression : characterClause
                     | propertyName
-                    | function;
+                    | function
+                    ;
 
-characterClause : 'CASEI' '(' characterExpression ')'
-                | 'ACCENTI' '(' characterExpression ')'
-                | characterLiteral;
+characterClause : CASEI '(' characterExpression ')'
+                | ACCENTI '(' characterExpression ')'
+                | CharacterLiteral
+                ;
 
 //  Definition of CHARACTER literals
-characterLiteral : '\'' character? '\'';
+CharacterLiteral : '\'' (Alpha | Digit | Whitespace | EscapeQuote)+ '\'';
 
-character : Alpha | Digit | Whitespace | escapeQuote;
-
-escapeQuote : '\'\'' | '\\\'';
+fragment EscapeQuote : '\'\'' | '\\\'';
 
 //  character & digit productions copied from:
 //  https://www.w3.org/TR/REC-xml/// charsets
-Alpha : [\u0007-\u0008]     //  bell, bs
+fragment Alpha : [\u0007-\u0008]     //  bell, bs
       | [\u0021-\u0026]     //  !, ', // , $, %, &
       | [\u0028-\u002F]     //  (, ), *, +, comma, -, ., /
       | [\u003A-\u0084]     //  --+
@@ -272,11 +306,12 @@ Alpha : [\u0007-\u0008]     //  bell, bs
       | [\u2060-\u2FFF]     //    |
       | [\u3001-\uD7FF]     //  --+
       | [\uE000-\uFFFD]     //  See note 8.
-      | [\u{10000}-\u{10FFFF}]; //  See note 9.
+      | [\u{10000}-\u{10FFFF}]  //  See note 9.
+      ;
 
-Digit : [\u0030-\u0039];
+fragment Digit : [\u0030-\u0039];
 
-Whitespace : [\u0009]  //  Character tabulation
+fragment Whitespace : [\u0009]  //  Character tabulation
            | [\u000A]  //  Line feed
            | [\u000B]  //  Line tabulation
            | [\u000C]  //  Form feed
@@ -300,34 +335,31 @@ Whitespace : [\u0009]  //  Character tabulation
            | [\u2029]  //  Paragraph separator
            | [\u202F]  //  Narrow no-break space
            | [\u205F]  //  Medium mathematical space
-           | [\u3000]; //  Ideographic space
+           | [\u3000]  //  Ideographic space
+           ;
+WS : Whitespace+ -> skip;
 
 //  Definition of NUMERIC literals
+UnsignedInteger : (Digit)+;  // 1234
+
+signedInteger : UnsignedInteger | Sign UnsignedInteger;  // 123 | +123 | -123
+
+decimalNumericLiteral : UnsignedInteger  // 123 | 123. | 123.0 | 0.123 | 0.
+                      | UnsignedInteger '.'
+                      | UnsignedInteger '.' UnsignedInteger
+                      | '.' UnsignedInteger
+                      ;
+
+scientificNumericLiteral : decimalNumericLiteral 'E' signedInteger;
+unsignedNumericLiteral : decimalNumericLiteral | scientificNumericLiteral;
+signedNumericLiteral : Sign unsignedNumericLiteral;
 numericLiteral : unsignedNumericLiteral | signedNumericLiteral;
 
-unsignedNumericLiteral : decimalNumericLiteral | scientificNumericLiteral;
+art : numericLiteral (',' numericLiteral)*;
 
-signedNumericLiteral : sign? unsignedNumericLiteral;
-
-decimalNumericLiteral : unsignedInteger
-                      | unsignedInteger '.'
-                      | unsignedInteger '.' unsignedInteger
-                      | '.' unsignedInteger;
-
-scientificNumericLiteral : mantissa 'E' exponent;
-
-mantissa : decimalNumericLiteral;
-
-exponent : signedInteger;
-
-signedInteger : sign? unsignedInteger;
-
-unsignedInteger : (Digit)+;
-
-sign : '+' | '-';
 
 //  Boolean literal
-booleanLiteral : 'TRUE' | 'FALSE';
+booleanLiteral : 'TRUE' | 'FALSE' | 'true' | 'false';
 
 //  Definition of GEOMETRIC literals
 //
@@ -335,14 +367,16 @@ booleanLiteral : 'TRUE' | 'FALSE';
 //        to instead reference some normative BNF for WKT.
 spatialInstance : geometryLiteral
                 | geometryCollectionTaggedText
-                | bboxTaggedText;
+                | bboxTaggedText
+                ;
 
 geometryLiteral : pointTaggedText
                 | linestringTaggedText
                 | polygonTaggedText
                 | multipointTaggedText
                 | multilinestringTaggedText
-                | multipolygonTaggedText;
+                | multipolygonTaggedText
+                ;
 
 pointTaggedText : 'POINT' 'Z'? pointText;
 linestringTaggedText : 'LINESTRING' 'Z'? lineStringText;
@@ -378,10 +412,12 @@ maxElev : signedNumericLiteral;
 
 temporalInstance : instantInstance | intervalInstance;
 instantInstance : dateInstant | timestampInstant;
-dateInstant : 'DATE' '(' dateInstantString ')';
+DATE : 'DATE' | 'date';
+dateInstant : DATE '(' dateInstantString ')';
 dateInstantString : '\'' fullDate '\'';
+TIMESTAMP : 'TIMESTAMP' | 'timestamp';
 timestampInstant : 'TIMESTAMP' '(' timestampInstantString ')';
-timestampInstantString : '\'' fullDate 'T' utcTime '\'';
+timestampInstantString : '\'' fullDate '\'T\'' utcTime '\'';  // TODO the 'T' will crash "city='Toronto'"
 intervalInstance : 'INTERVAL' '(' instantParameter ',' instantParameter ')';
 instantParameter : dateInstantString
                  | timestampInstantString
@@ -389,12 +425,5 @@ instantParameter : dateInstantString
                  | propertyName
                  | function;
 
-fullDate   : dateYear '-' dateMonth '-' dateDay;
-dateYear   : Digit Digit Digit Digit;
-dateMonth  : Digit Digit;
-dateDay    : Digit Digit;
-
-utcTime  : timeHour ':' timeMinute ':' timeSecond 'Z';
-timeHour   : Digit Digit;
-timeMinute : Digit Digit;
-timeSecond : Digit Digit ('.' Digit Digit*)?;
+fullDate   : UnsignedInteger '/' UnsignedInteger '/' UnsignedInteger;  // TODO we should use mode for 1970-01-01
+utcTime  : UnsignedInteger ':' UnsignedInteger ':' decimalNumericLiteral 'Z';  // TODO we should use mode for "hh:mm:ss.sssZ"
