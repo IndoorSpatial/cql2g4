@@ -78,7 +78,7 @@ isNullOperand : characterClause
               | temporalInstance
               | spatialInstance
               | arithmeticExpression
-//              | booleanExpression  // boolExpr -> boolTerm -> boolFactor -> boolPrimary -> predicate -> isNull -> boolExpr
+              | '(' booleanExpression ')'  // we use '(', ')' to avoid loop: boolExpr -> boolTerm -> boolFactor -> boolPrimary -> predicate -> isNull -> boolExpr
               | propertyName
               | function;
 
@@ -193,120 +193,41 @@ arithmeticOperand : numericLiteral
 //                          'Names and Tokens'.
 propertyName : identifier | '\'' identifier '\'';
 
-identifier : identifierStart identifierPart?;
+identifier : IdentifierStart identifierPart?;
 
-identifierPart : identifierStart
+COMBINING_MARKS : [\u0300-\u036F];  //  combining and diacritical marks
+TIE_SYMBOLS : [\u203F\u2040];       //  ‿ and ⁀
+
+identifierPart : IdentifierStart
                | '.'                    //  '\u002E'
-               | digit                  //  0-9
-               | '\u0300'..'\u036F'     //  combining and diacritical marks
-               | '\u203F'..'\u2040';    //  ‿ and ⁀
+               | Digit                  //  0-9
+               | COMBINING_MARKS
+               | TIE_SYMBOLS;
 
-identifierStart : '\u003A'              //  colon
-                | '\u005F'              //  underscore
-                | '\u0041'..'\u005A'    //  A-Z
-                | '\u0061'..'\u007A'    //  a-z
-                | '\u00C0'..'\u00D6'    //  À-Ö Latin-1 Supplement Letters
-                | '\u00D8'..'\u00F6'    //  Ø-ö Latin-1 Supplement Letters
-                | '\u00F8'..'\u02FF'    //  ø-ÿ Latin-1 Supplement Letters
-                | '\u0370'..'\u037D'    //  Ͱ-ͽ Greek and Coptic (without ';')
-                | '\u037F'..'\u1FFE'    //  See note 1.
-                | '\u200C'..'\u200D'    //  zero width non-joiner and joiner
-                | '\u2070'..'\u218F'    //  See note 2.
-                | '\u2C00'..'\u2FEF'    //  See note 3.
-                | '\u3001'..'\uD7FF'    //  See note 4.
-                | '\uF900'..'\uFDCF'    //  See note 5.
-                | '\uFDF0'..'\uFFFD'    //  See note 6.
-                | '\u10000'..'\uEFFFF'; //  See note 7.
+IdentifierStart : [\u003A]              //  colon
+                | [\u005F]              //  underscore
+                | [\u0041-\u005A]    //  A-Z
+                | [\u0061-\u007A]    //  a-z
+                | [\u00C0-\u00D6]    //  À-Ö Latin-1 Supplement Letters
+                | [\u00D8-\u00F6]    //  Ø-ö Latin-1 Supplement Letters
+                | [\u00F8-\u02FF]    //  ø-ÿ Latin-1 Supplement Letters
+                | [\u0370-\u037D]    //  Ͱ-ͽ Greek and Coptic (without ';')
+                | [\u037F-\u1FFE]    //  See note 1.
+                | [\u200C-\u200D]    //  zero width non-joiner and joiner
+                | [\u2070-\u218F]    //  See note 2.
+                | [\u2C00-\u2FEF]    //  See note 3.
+                | [\u3001-\uD7FF]    //  See note 4.
+                | [\uF900-\uFDCF]    //  See note 5.
+                | [\uFDF0-\uFFFD]    //  See note 6.
+                | [\u{10000}-\u{EFFFF}]; //  See note 7.
 
 //  See: https://unicode-table.com/en/blocks/
-
-//  Note 1: Greek, Coptic, Cyrillic, Cyrillic Supplement, Armenian, Hebrew,
-//          Arabic, Syriac, Arabic Supplement, Thaana, NKo, Samaritan, Mandaic,
-//          Syriac Supplement, Arabic Extended-A, Devanagari, Bengali, Gurmukhi,
-//          Gujarati, Oriya, Tamil, Telugu, Kannada, Malayalam, Sinhala, Thai,
-//          Lao, Tibetan, Myanmar, Georgian, Hangul Jamo, Ethiopic, Ethiopic
-//          Supplement, Cherokee, Unified Canadian Aboriginal Syllabics, Ogham,
-//          Runic, Tagalog, Hanunoo, Buhid, Tagbanwa, Khmer, Mongolian, Unified
-//          Canadian Aboriginal Syllabics Extended, Limbu, Tai Le, New Tai Lue,
-//          Khmer Symbols, Buginese, Tai Tham, Combining Diacritical Marks
-//          Extended, Balinese, Sundanese, Batak, Lepcha, Ol Chiki, Cyrillic
-//          Extended C, Georgian Extended, Sundanese Supplement, Vedic
-//          Extensions, Phonetic Extensions, Phonetic Extensions Supplement,
-//          Combining Diacritical Marks Supplement, Latin Extended Additional,
-//          Greek Extended
-//
-//  Note 2: Superscripts and Subscripts, Currency Symbols, Combining Diacritical
-//          Marks for Symbols, Letterlike Symbols, Number Forms (e.g. Roman
-//          numbers)
-//
-//  Note 3: Glagolitic, Latin Extended-C, Coptic, Georgian Supplement, Tifinagh,
-//          Ethiopic Extended, Cyrillic Extended-A, Supplemental Punctuation,
-//          CJK Radicals Supplement, Kangxi Radicals
-//
-//  Note 4: CJK Symbols and Punctuation Hiragana, Katakana, Bopomofo, Hangul
-//          Compatibility Jamo, Kanbun, Bopomofo Extended, CJK Strokes, Katakana
-//          Phonetic Extensions, Enclosed CJK Letters and Months, CJK
-//          Compatibility, CJK Unified Ideographs Extension A, Yijing Hexagram
-//          Symbols, CJK Unified Ideographs, Yi Syllables, Yi Radicals, Lisu,
-//          Vai, Cyrillic Extended-B, Bamum, Modifier Tone Letters, Latin
-//          Extended-D, Syloti Nagri, Common Indic Number Forms, Phags-pa,
-//          Saurashtra, Devanagari Extended, Kayah Li, Rejang, Hangul Jamo
-//          Extended-A, Javanese, Myanmar Extended-B, Cham, Myanmar Extended-A,
-//          Tai Viet, Meetei Mayek Extensions, Ethiopic Extended-A, Latin
-//          Extended-E, Cherokee Supplement, Meetei Mayek, Hangul Syllables,
-//          Hangul Jamo Extended-B
-//
-//  Note 5: CJK Compatibility Ideographs, Alphabetic Presentation Forms,
-//          Arabic Presentation Forms-A
-//
-//  Note 6: Arabic Presentation Forms-A, Variation Selectors, Vertical Forms,
-//          Combining Half Marks, CJK Compatibility Forms, Small Form Variants,
-//          Arabic Presentation Forms-B, Halfwidth and Fullwidth Forms, Specials
-//
-//  Note 7: Linear B Syllabary, Linear B Ideograms, Aegean Numbers, Ancient
-//          Greek Numbers, Ancient Symbols, Phaistos Disc, Lycian, Carian,
-//          Coptic Epact Numbers, Old Italic, Gothic, Old Permic, Ugaritic, Old
-//          Persian, Deseret, Shavian, Osmanya, Osage, Elbasan, Caucasian
-//          Albanian, Linear A, Cypriot Syllabary, Imperial Aramaic, Palmyrene,
-//          Nabataean, Hatran, Phoenician, Lydian, Meroitic Hieroglyphs,
-//          Meroitic Cursive, Kharoshthi, Old South Arabian, Old North Arabian,
-//          Manichaean, Avestan, Inscriptional Parthian, Inscriptional Pahlavi,
-//          Psalter Pahlavi, Old Turkic, Old Hungarian, Hanifi Rohingya, Rumi
-//          Numeral Symbols, Yezidi, Old Sogdian, Sogdian, Chorasmian, Elymaic,
-//          Brahmi, Kaithi, Sora Sompeng, Chakma, Mahajani, Sharada, Sinhala
-//          Archaic Numbers, Khojki, Multani, Khudawadi, Grantha, Newa, Tirhuta,
-//          Siddham, Modi, Mongolian Supplement, Takri, Ahom, Dogra, Warang Citi,
-//          Dives Akuru, Nandinagari, Zanabazar Square, Soyombo, Pau Cin Hau,
-//          Bhaiksuki, Marchen, Masaram Gondi, Gunjala Gondi, Makasar, Lisu
-//          Supplement, Tamil Supplement, Cuneiform, Cuneiform Numbers and
-//          Punctuation, Early Dynastic Cuneiform, Egyptian Hieroglyphs,
-//          Egyptian Hieroglyph Format Controls, Anatolian Hieroglyphs,Bamum
-//          Supplement, Mro, Bassa Vah, Pahawh Hmong, Medefaidrin, Miao,
-//          Ideographic Symbols and Punctuation, Tangut, Tangut Components,
-//          Khitan Small Script, Tangut Supplement, Kana Supplement, Kana
-//          Extended-A, Small Kana Extension, Nushu, Duployan, Shorthand Format
-//          Controls, Byzantine Musical Symbols, Musical Symbols, Ancient Greek
-//          Musical Notation, Mayan Numerals, Tai Xuan Jing Symbols, Counting
-//          Rod Numerals, Mathematical Alphanumeric Symbols, Sutton SignWriting,
-//          Glagolitic Supplement, Nyiakeng Puachue Hmong, Wancho, Mende Kikakui,
-//          Adlam, Indic Siyaq Numbers, Ottoman Siyaq Numbers, Arabic
-//          Mathematical Alphabetic Symbols, Mahjong Tiles, Domino Tiles,
-//          Playing Cards, Enclosed Alphanumeric Supplement, Enclosed Ideographic
-//          Supplement, Miscellaneous Symbols and Pictographs, Emoticons (Emoji),
-//          Ornamental Dingbats, Transport and Map Symbols, Alchemical Symbols,
-//          Geometric Shapes Extended, Supplemental Arrows-C, Supplemental
-//          Symbols and Pictographs, Chess Symbols, Symbols and Pictographs
-//          Extended-A, Symbols for Legacy Computing, CJK Unified Ideographs
-//          Extension B, CJK Unified Ideographs Extension C, CJK Unified
-//          Ideographs Extension D, CJK Unified Ideographs Extension E, CJK
-//          Unified Ideographs Extension F, CJK Compatibility Ideographs
-//          Supplement, CJK Unified Ideographs Extension G, Tags, Variation
-//          Selectors Supplement
 
 // =============================================================================//
 //  Definition of a FUNCTION
 // =============================================================================//
-function : identifier '(' (argumentList)* ')';
+function : IdentifierStart '(' ')'
+         | IdentifierStart '(' argumentList ')';
 
 argumentList : argument (',' argument)*;
 
@@ -332,105 +253,54 @@ characterClause : 'CASEI' '(' characterExpression ')'
 //  Definition of CHARACTER literals
 characterLiteral : '\'' character? '\'';
 
-character : alpha | digit | whitespace | escapeQuote;
+character : Alpha | Digit | Whitespace | escapeQuote;
 
 escapeQuote : '\'\'' | '\\\'';
 
 //  character & digit productions copied from:
 //  https://www.w3.org/TR/REC-xml/// charsets
-//
-alpha : '\u0007'..'\u0008'     //  bell, bs
-      | '\u0021'..'\u0026'     //  !, ', // , $, %, &
-      | '\u0028'..'\u002F'     //  (, ), *, +, comma, -, ., /
-      | '\u003A'..'\u0084'     //  --+
-      | '\u0086'..'\u009F'     //    |
-      | '\u00A1'..'\u167F'     //    |
-      | '\u1681'..'\u1FFF'     //    |
-      | '\u200B'..'\u2027'     //    +-> :,;,<,=,>,?,@,A-Z,[,\,],^,_,`,a-z,...
-      | '\u202A'..'\u202E'     //    |
-      | '\u2030'..'\u205E'     //    |
-      | '\u2060'..'\u2FFF'     //    |
-      | '\u3001'..'\uD7FF'     //  --+
-      | '\uE000'..'\uFFFD'     //  See note 8.
-      | '\u10000'..'\u10FFFF'; //  See note 9.
+Alpha : [\u0007-\u0008]     //  bell, bs
+      | [\u0021-\u0026]     //  !, ', // , $, %, &
+      | [\u0028-\u002F]     //  (, ), *, +, comma, -, ., /
+      | [\u003A-\u0084]     //  --+
+      | [\u0086-\u009F]     //    |
+      | [\u00A1-\u167F]     //    |
+      | [\u1681-\u1FFF]     //    |
+      | [\u200B-\u2027]     //    +-> :,;,<,=,>,?,@,A-Z,[,\,],^,_,`,a-z,...
+      | [\u202A-\u202E]     //    |
+      | [\u2030-\u205E]     //    |
+      | [\u2060-\u2FFF]     //    |
+      | [\u3001-\uD7FF]     //  --+
+      | [\uE000-\uFFFD]     //  See note 8.
+      | [\u{10000}-\u{10FFFF}]; //  See note 9.
 
-//  Note 8: Private Use, CJK Compatibility Ideographs, Alphabetic Presentation
-//          Forms, Arabic Presentation Forms-A, Combining Half Marks, CJK
-//          Compatibility Forms, Small Form Variants, Arabic Presentation Forms-B,
-//          Specials, Halfwidth and Fullwidth Forms, Specials
-//  Note 9: Linear B Syllabary, Linear B Ideograms, Aegean Numbers, Ancient Greek
-//          Numbers, Ancient Symbols, Phaistos Disc, Lycian, Carian, Coptic
-//          Epact Numbers, Old Italic, Gothic, Old Permic, Ugaritic, Old Persian,
-//          Deseret, Shavian, Osmanya, Osage, Elbasan, Caucasian Albanian,
-//          Vithkuqi, Linear A, Latin Extended-F, Cypriot Syllabary, Imperial
-//          Aramaic, Palmyrene, Nabataean, Hatran, Phoenician, Lydian, Meroitic
-//          Hieroglyphs, Meroitic Cursive, Kharoshthi, Old South Arabian, Old
-//          North Arabian, Manichaean, Avestan, Inscriptional Parthian,
-//          Inscriptional Pahlavi, Psalter Pahlavi, Old Turkic, Old Hungarian,
-//          Hanifi Rohingya, Rumi Numeral Symbols, Yezidi, Arabic Extended-C,
-//          Old Sogdian, Sogdian, Old Uyghur, Chorasmian, Elymaic, Brahmi,
-//          Kaithi, Sora Sompeng, Chakma, Mahajani, Sharada, Sinhala Archaic
-//          Numbers, Khojki, Multani, Khudawadi, Grantha, Newa, Tirhuta, Siddham,
-//          Modi, Mongolian Supplement, Takri, Ahom, Dogra, Warang Citi, Dives
-//          Akuru, Nandinagari, Zanabazar Square, Soyombo, Unified Canadian
-//          Aboriginal Syllabics Extended-A, Pau Cin Hau, Devanagari Extended-A,
-//          Bhaiksuki, Marchen, Masaram Gondi, Gunjala Gondi, Makasar, Kawi,
-//          Lisu Supplement, Tamil Supplement, Cuneiform, Cuneiform Numbers and
-//          Punctuation, Early Dynastic Cuneiform, Cypro-Minoan, Egyptian
-//          Hieroglyphs, Egyptian Hieroglyph Format Controls, Anatolian
-//          Hieroglyphs, Bamum Supplement, Mro, Tangsa, Bassa Vah, Pahawh Hmong,
-//          Medefaidrin, Miao, Ideographic Symbols and Punctuation, Tangut,
-//          Tangut Components, Khitan Small Script, Tangut Supplement, Kana
-//          Extended-B, Kana Supplement, Kana Extended-A, Small Kana Extension,
-//          Nushu, Duployan, Shorthand Format Controls, Znamenny Musical Notation,
-//          Byzantine Musical Symbols, Musical Symbols, Ancient Greek Musical
-//          Notation, Kaktovik Numerals, Mayan Numerals, Tai Xuan Jing Symbols,
-//          Counting Rod Numerals, Mathematical Alphanumeric Symbols, Sutton
-//          SignWriting, Latin Extended-G, Glagolitic Supplement, Cyrillic
-//          Extended-D, Nyiakeng Puachue Hmong, Toto, Wancho, Nag Mundari,
-//          Ethiopic Extended-B, Mende Kikakui, Adlam, Indic Siyaq Numbers,
-//          Ottoman Siyaq Numbers, Arabic Mathematical Alphabetic Symbols,
-//          Mahjong Tiles, Domino Tiles, Playing Cards, Enclosed Alphanumeric
-//          Supplement, Enclosed Ideographic Supplement, Miscellaneous Symbols
-//          and Pictographs, Emoticons, Ornamental Dingbats, Transport and Map
-//          Symbols, Alchemical Symbols, Geometric Shapes Extended, Supplemental
-//          Arrows-C, Supplemental Symbols and Pictographs, Chess Symbols, Symbols
-//          and Pictographs Extended-A, Symbols for Legacy Computing, CJK Unified
-//          Ideographs Extension B, CJK Unified Ideographs Extension C, CJK
-//          Unified Ideographs Extension D, CJK Unified Ideographs Extension E,
-//          CJK Unified Ideographs Extension F, CJK Compatibility Ideographs
-//          Supplement, CJK Unified Ideographs Extension G, CJK Unified
-//          Ideographs Extension H, Tags, Variation Selectors Supplement,
-//          Supplementary Private Use Area-A, Supplementary Private Use Area-B
+Digit : [\u0030-\u0039];
 
-
-digit : '\u0030'..'\u0039';
-
-whitespace : '\u0009'  //  Character tabulation
-           | '\u000A'  //  Line feed
-           | '\u000B'  //  Line tabulation
-           | '\u000C'  //  Form feed
-           | '\u000D'  //  Carriage return
-           | '\u0020'  //  Space
-           | '\u0085'  //  Next line
-           | '\u00A0'  //  No-break space
-           | '\u1680'  //  Ogham space mark
-           | '\u2000'  //  En quad
-           | '\u2001'  //  Em quad
-           | '\u2002'  //  En space
-           | '\u2003'  //  Em space
-           | '\u2004'  //  Three-per-em space
-           | '\u2005'  //  Four-per-em space
-           | '\u2006'  //  Six-per-em space
-           | '\u2007'  //  Figure space
-           | '\u2008'  //  Punctuation space
-           | '\u2009'  //  Thin space
-           | '\u200A'  //  Hair space
-           | '\u2028'  //  Line separator
-           | '\u2029'  //  Paragraph separator
-           | '\u202F'  //  Narrow no-break space
-           | '\u205F'  //  Medium mathematical space
-           | '\u3000'; //  Ideographic space
+Whitespace : [\u0009]  //  Character tabulation
+           | [\u000A]  //  Line feed
+           | [\u000B]  //  Line tabulation
+           | [\u000C]  //  Form feed
+           | [\u000D]  //  Carriage return
+           | [\u0020]  //  Space
+           | [\u0085]  //  Next line
+           | [\u00A0]  //  No-break space
+           | [\u1680]  //  Ogham space mark
+           | [\u2000]  //  En quad
+           | [\u2001]  //  Em quad
+           | [\u2002]  //  En space
+           | [\u2003]  //  Em space
+           | [\u2004]  //  Three-per-em space
+           | [\u2005]  //  Four-per-em space
+           | [\u2006]  //  Six-per-em space
+           | [\u2007]  //  Figure space
+           | [\u2008]  //  Punctuation space
+           | [\u2009]  //  Thin space
+           | [\u200A]  //  Hair space
+           | [\u2028]  //  Line separator
+           | [\u2029]  //  Paragraph separator
+           | [\u202F]  //  Narrow no-break space
+           | [\u205F]  //  Medium mathematical space
+           | [\u3000]; //  Ideographic space
 
 //  Definition of NUMERIC literals
 numericLiteral : unsignedNumericLiteral | signedNumericLiteral;
@@ -439,8 +309,10 @@ unsignedNumericLiteral : decimalNumericLiteral | scientificNumericLiteral;
 
 signedNumericLiteral : sign? unsignedNumericLiteral;
 
-decimalNumericLiteral : unsignedInteger ('.' unsignedInteger?)?
-                        | '.' unsignedInteger;
+decimalNumericLiteral : unsignedInteger
+                      | unsignedInteger '.'
+                      | unsignedInteger '.' unsignedInteger
+                      | '.' unsignedInteger;
 
 scientificNumericLiteral : mantissa 'E' exponent;
 
@@ -450,7 +322,7 @@ exponent : signedInteger;
 
 signedInteger : sign? unsignedInteger;
 
-unsignedInteger : {digit};
+unsignedInteger : (Digit)+;
 
 sign : '+' | '-';
 
@@ -473,75 +345,44 @@ geometryLiteral : pointTaggedText
                 | multipolygonTaggedText;
 
 pointTaggedText : 'POINT' 'Z'? pointText;
-
 linestringTaggedText : 'LINESTRING' 'Z'? lineStringText;
-
 polygonTaggedText : 'POLYGON' 'Z'? polygonText;
-
 multipointTaggedText : 'MULTIPOINT' 'Z'? multiPointText;
-
 multilinestringTaggedText : 'MULTILINESTRING' 'Z'? multiLineStringText;
-
 multipolygonTaggedText : 'MULTIPOLYGON' 'Z'? multiPolygonText;
-
 geometryCollectionTaggedText : 'GEOMETRYCOLLECTION' 'Z'? geometryCollectionText;
 
 pointText : '(' point ')';
-
-point : xCoord yCoord zCoord?;
-
+point : xCoord yCoord | xCoord yCoord zCoord;
 xCoord : signedNumericLiteral;
-
 yCoord : signedNumericLiteral;
-
 zCoord : signedNumericLiteral;
 
 lineStringText : '(' point ',' point (',' point)? ')';
-
 linearRingText : '(' point ',' point ',' point ',' point (',' point)* ')';
-
 polygonText : '(' linearRingText (',' linearRingText)* ')';
-
 multiPointText : '(' pointText (',' pointText)* ')';
-
 multiLineStringText : '(' lineStringText (',' lineStringText)* ')';
-
 multiPolygonText : '(' polygonText (',' polygonText)* ')';
-
 geometryCollectionText : '(' geometryLiteral (',' geometryLiteral)* ')';
 
 bboxTaggedText : 'BBOX' bboxText;
-
 bboxText : '(' westBoundLon ',' southBoundLat ',' (minElev ',')? eastBoundLon ',' northBoundLat (',' maxElev)? ')';
-
 westBoundLon : signedNumericLiteral;
-
 eastBoundLon : signedNumericLiteral;
-
 northBoundLat : signedNumericLiteral;
-
 southBoundLat : signedNumericLiteral;
 
 minElev : signedNumericLiteral;
-
 maxElev : signedNumericLiteral;
 
 temporalInstance : instantInstance | intervalInstance;
-
 instantInstance : dateInstant | timestampInstant;
-
-dateInstant : 'DATE'
-              '(' dateInstantString ')';
-
+dateInstant : 'DATE' '(' dateInstantString ')';
 dateInstantString : '\'' fullDate '\'';
-
-timestampInstant : 'TIMESTAMP'
-                   '(' timestampInstantString ')';
-
+timestampInstant : 'TIMESTAMP' '(' timestampInstantString ')';
 timestampInstantString : '\'' fullDate 'T' utcTime '\'';
-
 intervalInstance : 'INTERVAL' '(' instantParameter ',' instantParameter ')';
-
 instantParameter : dateInstantString
                  | timestampInstantString
                  | '..'
@@ -549,17 +390,11 @@ instantParameter : dateInstantString
                  | function;
 
 fullDate   : dateYear '-' dateMonth '-' dateDay;
-
-dateYear   : digit digit digit digit;
-
-dateMonth  : digit digit;
-
-dateDay    : digit digit;
+dateYear   : Digit Digit Digit Digit;
+dateMonth  : Digit Digit;
+dateDay    : Digit Digit;
 
 utcTime  : timeHour ':' timeMinute ':' timeSecond 'Z';
-
-timeHour   : digit digit;
-
-timeMinute : digit digit;
-
-timeSecond : digit digit ('.' digit digit*)?;
+timeHour   : Digit Digit;
+timeMinute : Digit Digit;
+timeSecond : Digit Digit ('.' Digit Digit*)?;

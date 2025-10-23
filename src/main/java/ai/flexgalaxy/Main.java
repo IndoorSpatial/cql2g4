@@ -8,10 +8,10 @@ import org.antlr.v4.runtime.CommonTokenStream;
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) {
-        Cql2Lexer lexer = new Cql2Lexer(CharStreams.fromString("1+2+5"));
+        Cql2Lexer lexer = new Cql2Lexer(CharStreams.fromString("3 > 5"));
         Cql2Parser parser = new Cql2Parser(new CommonTokenStream(lexer));
 
-        parser.start();
+        parser.booleanExpression();
 
         System.out.println("My parser has executed Order 66");
     }
