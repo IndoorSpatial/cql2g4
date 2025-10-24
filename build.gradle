@@ -19,6 +19,9 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
+    implementation "com.fasterxml.jackson.core:jackson-core:2.19.1"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.19.1"
+
     antlr "org.antlr:antlr4:4.13.2"
     antlrTool "org.antlr:antlr4:4.13.2"
 }
@@ -34,7 +37,8 @@ tasks.register('generateCppParser', JavaExec) {
             "-listener",
             "-visitor",
             "-package", "cql2g4cpp",
-            "src/main/resources/Cql2.g4"
+            "src/main/resources/Cql2Parser.g4",
+            "src/main/resources/Cql2Lexer.g4"
     ]
 }
 
@@ -44,12 +48,13 @@ tasks.register('generateJavaParser', JavaExec) {
     mainClass = "org.antlr.v4.Tool"
     classpath = configurations.antlrTool
     args = [
-            "-o", "build/generated/Cql2/Java",
+            "-o", "build/generated/Cql2/Java/ai/flexgalaxy/Cql2g4",
             "-Dlanguage=Java",
             "-listener",
             "-visitor",
             "-package", "ai.flexgalaxy.Cql2g4",
-            "src/main/resources/Cql2.g4"
+            "src/main/resources/Cql2Parser.g4",
+            "src/main/resources/Cql2Lexer.g4"
     ]
 }
 
