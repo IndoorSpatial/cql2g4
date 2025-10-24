@@ -341,10 +341,8 @@ WS : Whitespace+ -> skip;
 
 //  Definition of NUMERIC literals
 UnsignedInteger : (Digit)+;  // 1234
-
-signedInteger : UnsignedInteger | Sign UnsignedInteger;  // 123 | +123 | -123
-
-decimalNumericLiteral : UnsignedInteger  // 123 | 123. | 123.0 | 0.123 | 0.
+signedInteger : UnsignedInteger | Sign UnsignedInteger;
+decimalNumericLiteral : UnsignedInteger
                       | UnsignedInteger '.'
                       | UnsignedInteger '.' UnsignedInteger
                       | '.' UnsignedInteger
@@ -352,10 +350,8 @@ decimalNumericLiteral : UnsignedInteger  // 123 | 123. | 123.0 | 0.123 | 0.
 
 scientificNumericLiteral : decimalNumericLiteral 'E' signedInteger;
 unsignedNumericLiteral : decimalNumericLiteral | scientificNumericLiteral;
-signedNumericLiteral : Sign unsignedNumericLiteral;
+signedNumericLiteral : Sign? unsignedNumericLiteral;
 numericLiteral : unsignedNumericLiteral | signedNumericLiteral;
-
-art : numericLiteral (',' numericLiteral)*;
 
 
 //  Boolean literal
@@ -392,7 +388,7 @@ xCoord : signedNumericLiteral;
 yCoord : signedNumericLiteral;
 zCoord : signedNumericLiteral;
 
-lineStringText : '(' point ',' point (',' point)? ')';
+lineStringText : '(' point ',' point (',' point)* ')';
 linearRingText : '(' point ',' point ',' point ',' point (',' point)* ')';
 polygonText : '(' linearRingText (',' linearRingText)* ')';
 multiPointText : '(' pointText (',' pointText)* ')';
