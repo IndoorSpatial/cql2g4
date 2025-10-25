@@ -23,7 +23,7 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
     public JsonConverterVisitor() {
     }
 
-    String toJsonString(ParseTree tree) throws JsonProcessingException {
+    public String toJsonString(ParseTree tree) throws JsonProcessingException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(visit(tree));
     }
 
@@ -211,7 +211,7 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitSpatialPredicate(Cql2Parser.SpatialPredicateContext ctx) {
-        return OpArgs(ctx.SPATIAL_FUNC().getText(), ctx.geomExpression());
+        return OpArgs(ctx.SPATIAL_FUNC().getText().toLowerCase(), ctx.geomExpression());
     }
 
     @Override
@@ -224,7 +224,7 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitTemporalPredicate(Cql2Parser.TemporalPredicateContext ctx) {
-        return OpArgs(ctx.TEMPORAL_FUNC().getText(), ctx.temporalExpression());
+        return OpArgs(ctx.TEMPORAL_FUNC().getText().toLowerCase(), ctx.temporalExpression());
     }
 
     @Override
@@ -237,7 +237,7 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitArrayPredicate(Cql2Parser.ArrayPredicateContext ctx) {
-        return OpArgs(ctx.ARRAY_FUNC().getText(), ctx.arrayExpression());
+        return OpArgs(ctx.ARRAY_FUNC().getText().toLowerCase(), ctx.arrayExpression());
     }
 
     @Override
@@ -382,12 +382,15 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitNumericLiteral(Cql2Parser.NumericLiteralContext ctx) {
-        return objectMapper.valueToTree(Double.parseDouble(ctx.getText()));
+        if (ctx.getText().contains(String.valueOf('.')))
+            return objectMapper.valueToTree(Double.parseDouble(ctx.getText()));
+        else
+            return objectMapper.valueToTree(Integer.parseInt(ctx.getText()));
     }
 
     @Override
     public JsonNode visitBooleanLiteral(Cql2Parser.BooleanLiteralContext ctx) {
-        return objectMapper.valueToTree(ctx.BOOL().getText());
+        return objectMapper.valueToTree(ctx.BOOL().getText().toUpperCase().equals("TRUE"));
     }
 
     @Override
