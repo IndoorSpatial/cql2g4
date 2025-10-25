@@ -109,7 +109,6 @@ temporalExpression : temporalInstance
                    | function
                    ;
 
-
 //  An array predicate evaluates if two array expressions satisfy the
 //  condition implied by a standardized array comparison function.  If the
 //  conditions of the array comparison function are met, the function returns
@@ -144,7 +143,7 @@ arrayElement : characterClause
 //  An arithmetic expression is an expression composed of an arithmetic
 //  operand (a property name, a number or a function that returns a number),
 //  an arithmetic operators (+,-,*,/,%,div,^) and another arithmetic operand.
-arithmeticExpression : arithmeticTerm (Sign arithmeticTerm)*;  // TODO: should we use Sign or ArithmeticOperatorPlusMinus?
+arithmeticExpression : arithmeticTerm (Sign arithmeticTerm)*;  // We use Sign instead of ArithmeticOperatorPlusMinus
 
 arithmeticTerm : powerTerm (ArithmeticOperatorMultDiv powerTerm)*;
 
@@ -279,6 +278,6 @@ intervalInstance : INTERVAL LP instantParameter COMMA instantParameter RP;
 instantParameter : CharacterLiteral
                  | dateInstant
                  | timestampInstant
-                 | DDOT
                  | propertyName
-                 | function;
+                 | function
+                 | DDOT;

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.RuleNode;
@@ -12,53 +13,92 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.util.Arrays;
+import java.util.List;
+
 public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<JsonNode> {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public JsonConverterVisitor() {}
+    public JsonConverterVisitor() {
+    }
 
     String toJsonString(ParseTree tree) throws JsonProcessingException {
         return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(visit(tree));
     }
 
-    @Override
-    public JsonNode visitBooleanExpression(Cql2Parser.BooleanExpressionContext ctx) {
-        if (ctx.booleanTerm().size() > 1) {
-            ObjectNode n = objectMapper.createObjectNode();
-            n.put("op", "or");
-            ArrayNode args = objectMapper.createArrayNode();
-            ctx.booleanTerm().forEach(term -> args.add(visit(term)));
-            n.set("args", args);
-            return n;
-        } else {
-            return visit(ctx.booleanTerm().getFirst());
-        }
+    private JsonNode Not(JsonNode node) {
+        ObjectNode not = objectMapper.createObjectNode();
+        not.put("op", "not");
+        ArrayNode args = objectMapper.createArrayNode();
+        args.add(node);
+        not.set("args", args);
+        return not;
     }
 
-    @Override
-    public JsonNode visitBooleanTerm(Cql2Parser.BooleanTermContext ctx) {
+    private JsonNode OpArgs(String op, List<? extends ParserRuleContext> ctxs) {
         ObjectNode n = objectMapper.createObjectNode();
-        n.put("op", "and");
+        n.put("op", op);
         ArrayNode args = objectMapper.createArrayNode();
-        ctx.booleanFactor().forEach(term -> args.add(visit(term)));
+        ctxs.forEach(ctx -> args.add(visit(ctx)));
         n.set("args", args);
         return n;
     }
 
+    private JsonNode OpArgs(String op, JsonNode node, List<? extends ParserRuleContext> ctxs) {
+        ObjectNode n = objectMapper.createObjectNode();
+        n.put("op", op);
+        ArrayNode args = objectMapper.createArrayNode();
+        args.add(node);
+        ctxs.forEach(ctx -> args.add(visit(ctx)));
+        n.set("args", args);
+        return n;
+    }
+
+    private JsonNode OpArgs(String op, ParserRuleContext... ctxs) {
+        List<ParserRuleContext> ctxsList = Arrays.asList(ctxs);
+        return OpArgs(op, ctxsList);
+    }
+
+    private JsonNode OpArgs(String op, JsonNode node, ParserRuleContext... ctxs) {
+        List<ParserRuleContext> ctxsList = Arrays.asList(ctxs);
+        return OpArgs(op, node, ctxsList);
+    }
+
+    private JsonNode Args(List<? extends ParserRuleContext> ctxs) {
+        ArrayNode args = objectMapper.createArrayNode();
+        ctxs.forEach(ctx -> args.add(visit(ctx)));
+        return args;
+    }
+
+    private static String trim(String str, Character character) {
+        if (str == null || str.length() < 2)
+            return str;
+        if (str.charAt(0) == character && str.charAt(str.length() - 1) == character)
+            return str.substring(1, str.length() - 1);
+        return str;
+    }
+
+    @Override
+    public JsonNode visitBooleanExpression(Cql2Parser.BooleanExpressionContext ctx) {
+        if (ctx.booleanTerm().size() > 1)
+            return OpArgs("or", ctx.booleanTerm());
+        else
+            return visit(ctx.booleanTerm().getFirst());
+    }
+
+    @Override
+    public JsonNode visitBooleanTerm(Cql2Parser.BooleanTermContext ctx) {
+        if (ctx.booleanFactor().size() > 1)
+            return OpArgs("and", ctx.booleanFactor());
+        else
+            return visit(ctx.booleanFactor().getFirst());
+    }
+
     @Override
     public JsonNode visitBooleanFactor(Cql2Parser.BooleanFactorContext ctx) {
-        JsonNode primary = visit(ctx.booleanPrimary());
-        if (ctx.NOT() == null) {
-            return primary;
-        } else {
-            ObjectNode n = objectMapper.createObjectNode();
-            n.put("op", "not");
-            ArrayNode args = objectMapper.createArrayNode();
-            args.add(primary);
-            n.set("args", args);
-            return n;
-        }
+        JsonNode n = visit(ctx.booleanPrimary());
+        return ctx.NOT() == null ? n : Not(n);
     }
 
     @Override
@@ -91,127 +131,189 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitBinaryComparisonPredicate(Cql2Parser.BinaryComparisonPredicateContext ctx) {
-        return null;
+        return OpArgs(ctx.COMP_OP().getText(), ctx.scalarExpression());
     }
 
     @Override
     public JsonNode visitScalarExpression(Cql2Parser.ScalarExpressionContext ctx) {
+        if (ctx.propertyName() != null) return visit(ctx.propertyName());
+        if (ctx.function() != null) return visit(ctx.function());
+        if (ctx.characterClause() != null) return visit(ctx.characterClause());
+        if (ctx.numericLiteral() != null) return visit(ctx.numericLiteral());
+        if (ctx.instantInstance() != null) return visit(ctx.instantInstance());
+        if (ctx.booleanLiteral() != null) return visit(ctx.booleanLiteral());
+        if (ctx.arithmeticExpression() != null) return visit(ctx.arithmeticExpression());
         return null;
     }
 
     @Override
     public JsonNode visitIsLikePredicate(Cql2Parser.IsLikePredicateContext ctx) {
-        return null;
+        JsonNode n = OpArgs("like", ctx.characterExpression(), ctx.patternExpression());
+        return ctx.NOT() == null ? n : Not(n);
     }
 
     @Override
     public JsonNode visitPatternExpression(Cql2Parser.PatternExpressionContext ctx) {
-        return null;
+        if (ctx.CASEI() != null) {
+            return OpArgs("casei", ctx.patternExpression());
+        } else if (ctx.ACCENTI() != null) {
+            return OpArgs("accenti", ctx.patternExpression());
+        } else {
+            String charactorLiteral = ctx.CharacterLiteral().getText();
+            return objectMapper.valueToTree(trim(charactorLiteral, '\''));
+        }
     }
 
     @Override
     public JsonNode visitIsBetweenPredicate(Cql2Parser.IsBetweenPredicateContext ctx) {
-        return null;
+        JsonNode n = OpArgs("between", ctx.numericExpression());
+        return ctx.NOT() == null ? n : Not(n);
     }
 
     @Override
     public JsonNode visitNumericExpression(Cql2Parser.NumericExpressionContext ctx) {
+        if (ctx.propertyName() != null) return visit(ctx.propertyName());
+        if (ctx.arithmeticExpression() != null) return visit(ctx.arithmeticExpression());
+        if (ctx.numericLiteral() != null) return visit(ctx.numericLiteral());
+        if (ctx.function() != null) return visit(ctx.function());
         return null;
     }
 
     @Override
     public JsonNode visitIsInListPredicate(Cql2Parser.IsInListPredicateContext ctx) {
-        return null;
+        JsonNode n = OpArgs("in", ctx.scalarExpression(), ctx.inList());
+        return ctx.NOT() == null ? n : Not(n);
     }
 
     @Override
     public JsonNode visitInList(Cql2Parser.InListContext ctx) {
-        return null;
+        return Args(ctx.scalarExpression());
     }
 
     @Override
     public JsonNode visitIsNullPredicate(Cql2Parser.IsNullPredicateContext ctx) {
-        return null;
+        JsonNode n = OpArgs("isNull", ctx.isNullOperand());
+        return ctx.NOT() == null ? n : Not(n);
     }
 
     @Override
     public JsonNode visitIsNullOperand(Cql2Parser.IsNullOperandContext ctx) {
+        if (ctx.propertyName() != null) return visit(ctx.propertyName());
+        if (ctx.characterClause() != null) return visit(ctx.characterClause());
+        if (ctx.numericLiteral() != null) return visit(ctx.numericLiteral());
+        if (ctx.temporalInstance() != null) return visit(ctx.temporalInstance());
+        if (ctx.spatialInstance() != null) return visit(ctx.spatialInstance());
+        if (ctx.arithmeticExpression() != null) return visit(ctx.arithmeticExpression());
+        if (ctx.booleanExpression() != null) return visit(ctx.booleanExpression());
+        if (ctx.function() != null) return visit(ctx.function());
         return null;
     }
 
     @Override
     public JsonNode visitSpatialPredicate(Cql2Parser.SpatialPredicateContext ctx) {
-        return null;
+        return OpArgs(ctx.SPATIAL_FUNC().getText(), ctx.geomExpression());
     }
 
     @Override
     public JsonNode visitGeomExpression(Cql2Parser.GeomExpressionContext ctx) {
+        if (ctx.spatialInstance() != null) return visit(ctx.spatialInstance());
+        if (ctx.propertyName() != null) return visit(ctx.propertyName());
+        if (ctx.function() != null) return visit(ctx.function());
         return null;
     }
 
     @Override
     public JsonNode visitTemporalPredicate(Cql2Parser.TemporalPredicateContext ctx) {
-        return null;
+        return OpArgs(ctx.TEMPORAL_FUNC().getText(), ctx.temporalExpression());
     }
 
     @Override
     public JsonNode visitTemporalExpression(Cql2Parser.TemporalExpressionContext ctx) {
+        if (ctx.temporalInstance() != null) return visit(ctx.temporalInstance());
+        if (ctx.propertyName() != null) return visit(ctx.propertyName());
+        if (ctx.function() != null) return visit(ctx.function());
         return null;
     }
 
     @Override
     public JsonNode visitArrayPredicate(Cql2Parser.ArrayPredicateContext ctx) {
-        return null;
+        return OpArgs(ctx.ARRAY_FUNC().getText(), ctx.arrayExpression());
     }
 
     @Override
     public JsonNode visitArrayExpression(Cql2Parser.ArrayExpressionContext ctx) {
+        if (ctx.array() != null) return visit(ctx.array());
+        if (ctx.propertyName() != null) return visit(ctx.propertyName());
+        if (ctx.function() != null) return visit(ctx.function());
         return null;
     }
 
     @Override
     public JsonNode visitArray(Cql2Parser.ArrayContext ctx) {
-        return null;
+        return Args(ctx.arrayElement());
     }
 
     @Override
     public JsonNode visitArrayElement(Cql2Parser.ArrayElementContext ctx) {
+        if (ctx.propertyName() != null) return visit(ctx.propertyName());
+        if (ctx.characterClause() != null) return visit(ctx.characterClause());
+        if (ctx.numericLiteral() != null) return visit(ctx.numericLiteral());
+        if (ctx.temporalInstance() != null) return visit(ctx.temporalInstance());
+        if (ctx.spatialInstance() != null) return visit(ctx.spatialInstance());
+        if (ctx.array() != null) return visit(ctx.array());
+        if (ctx.arithmeticExpression() != null) return visit(ctx.arithmeticExpression());
+        if (ctx.booleanExpression() != null) return visit(ctx.booleanExpression());
+        if (ctx.function() != null) return visit(ctx.function());
         return null;
     }
 
     @Override
     public JsonNode visitArithmeticExpression(Cql2Parser.ArithmeticExpressionContext ctx) {
-        return null;
+        JsonNode n = visit(ctx.arithmeticTerm().getFirst());
+        for (int i = 0; i < ctx.Sign().size(); i++)
+            n = OpArgs(ctx.Sign(i).getText(), n, ctx.arithmeticTerm(i + 1));
+        return n;
     }
 
     @Override
     public JsonNode visitArithmeticTerm(Cql2Parser.ArithmeticTermContext ctx) {
-        return null;
+        JsonNode n = visit(ctx.powerTerm().getFirst());
+        for (int i = 0; i < ctx.ArithmeticOperatorMultDiv().size(); i++)
+            n = OpArgs(ctx.ArithmeticOperatorMultDiv(i).getText(), n, ctx.powerTerm(i + 1));
+        return n;
     }
 
     @Override
     public JsonNode visitPowerTerm(Cql2Parser.PowerTermContext ctx) {
-        return null;
+        if (ctx.POWER() != null)
+            return OpArgs(ctx.POWER().getText(), ctx.arithmeticFactor());
+        else
+            return visit(ctx.arithmeticFactor().getFirst());
     }
 
     @Override
     public JsonNode visitArithmeticFactor(Cql2Parser.ArithmeticFactorContext ctx) {
-        return null;
+        if (ctx.arithmeticExpression() != null) return visit(ctx.arithmeticExpression());
+        if (ctx.Sign() != null) return OpArgs(ctx.Sign().getText(), ctx.arithmeticOperand());
+        else return visit(ctx.arithmeticOperand());
     }
 
     @Override
     public JsonNode visitArithmeticOperand(Cql2Parser.ArithmeticOperandContext ctx) {
+        if (ctx.numericLiteral() != null) return visit(ctx.numericLiteral());
+        if (ctx.propertyName() != null) return visit(ctx.propertyName());
+        if (ctx.function() != null) return visit(ctx.function());
         return null;
     }
 
     @Override
     public JsonNode visitPropertyName(Cql2Parser.PropertyNameContext ctx) {
-        return null;
+        return objectMapper.createObjectNode().put("property", ctx.Identifier().getText());
     }
 
     @Override
     public JsonNode visitFunction(Cql2Parser.FunctionContext ctx) {
-        return null;
+        return OpArgs(ctx.Identifier().getText(), ctx.argumentList().argument());
     }
 
     @Override
@@ -221,17 +323,36 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitArgument(Cql2Parser.ArgumentContext ctx) {
+        if (ctx.propertyName() != null) return visit(ctx.propertyName());
+        if (ctx.characterClause() != null) return visit(ctx.characterClause());
+        if (ctx.numericLiteral() != null) return visit(ctx.numericLiteral());
+        if (ctx.temporalInstance() != null) return visit(ctx.temporalInstance());
+        if (ctx.spatialInstance() != null) return visit(ctx.spatialInstance());
+        if (ctx.array() != null) return visit(ctx.array());
+        if (ctx.arithmeticExpression() != null) return visit(ctx.arithmeticExpression());
+        if (ctx.booleanExpression() != null) return visit(ctx.booleanExpression());
+        if (ctx.function() != null) return visit(ctx.function());
         return null;
     }
 
     @Override
     public JsonNode visitCharacterExpression(Cql2Parser.CharacterExpressionContext ctx) {
+        if (ctx.characterClause() != null) return visit(ctx.characterClause());
+        if (ctx.propertyName() != null) return visit(ctx.propertyName());
+        if (ctx.function() != null) return visit(ctx.function());
         return null;
     }
 
     @Override
     public JsonNode visitCharacterClause(Cql2Parser.CharacterClauseContext ctx) {
-        return null;
+        if (ctx.CASEI() != null) {
+            return OpArgs("casei", ctx.characterExpression());
+        } else if (ctx.ACCENTI() != null) {
+            return OpArgs("accenti", ctx.characterExpression());
+        } else {
+            String charactorLiteral = ctx.CharacterLiteral().getText();
+            return objectMapper.valueToTree(trim(charactorLiteral, '\''));
+        }
     }
 
     @Override
@@ -261,22 +382,25 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitNumericLiteral(Cql2Parser.NumericLiteralContext ctx) {
-        return null;
+        return objectMapper.valueToTree(Double.parseDouble(ctx.getText()));
     }
 
     @Override
     public JsonNode visitBooleanLiteral(Cql2Parser.BooleanLiteralContext ctx) {
-        return objectMapper.valueToTree(ctx.BOOL().getSymbol().getText());
+        return objectMapper.valueToTree(ctx.BOOL().getText());
     }
 
     @Override
     public JsonNode visitSpatialInstance(Cql2Parser.SpatialInstanceContext ctx) {
+        if (ctx.geometryLiteral() != null) return visit(ctx.geometryLiteral());
+        if (ctx.geometryCollectionTaggedText() != null) return visit(ctx.geometryCollectionTaggedText());
+        if (ctx.bboxTaggedText() != null) return visit(ctx.bboxTaggedText());
         return null;
     }
 
     @Override
     public JsonNode visitGeometryLiteral(Cql2Parser.GeometryLiteralContext ctx) {
-        return null;
+        return objectMapper.valueToTree(ctx.getText());
     }
 
     @Override
@@ -376,12 +500,21 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitBboxTaggedText(Cql2Parser.BboxTaggedTextContext ctx) {
-        return null;
+        return objectMapper.createObjectNode().set("bbox", visit(ctx.bboxText()));
     }
 
     @Override
     public JsonNode visitBboxText(Cql2Parser.BboxTextContext ctx) {
-        return null;
+        ArrayNode array = objectMapper.createArrayNode();
+        array.add(Double.parseDouble(ctx.westBoundLon().getText()));
+        array.add(Double.parseDouble(ctx.southBoundLat().getText()));
+        if (ctx.minElev() != null)
+            array.add(Double.parseDouble(ctx.minElev().getText()));
+        array.add(Double.parseDouble(ctx.eastBoundLon().getText()));
+        array.add(Double.parseDouble(ctx.northBoundLat().getText()));
+        if (ctx.maxElev() != null)
+            array.add(Double.parseDouble(ctx.maxElev().getText()));
+        return array;
     }
 
     @Override
@@ -416,31 +549,41 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitTemporalInstance(Cql2Parser.TemporalInstanceContext ctx) {
+        if (ctx.instantInstance() != null) return visit(ctx.instantInstance());
+        if (ctx.intervalInstance() != null) return visit(ctx.intervalInstance());
         return null;
     }
 
     @Override
     public JsonNode visitInstantInstance(Cql2Parser.InstantInstanceContext ctx) {
+        if (ctx.dateInstant() != null) return visit(ctx.dateInstant());
+        if (ctx.timestampInstant() != null) return visit(ctx.timestampInstant());
         return null;
     }
 
     @Override
     public JsonNode visitDateInstant(Cql2Parser.DateInstantContext ctx) {
-        return null;
+        return objectMapper.createObjectNode().put("date", trim(ctx.CharacterLiteral().getText(), '\''));
     }
 
     @Override
     public JsonNode visitTimestampInstant(Cql2Parser.TimestampInstantContext ctx) {
-        return null;
+        return objectMapper.createObjectNode().put("timestamp", trim(ctx.CharacterLiteral().getText(), '\''));
     }
 
     @Override
     public JsonNode visitIntervalInstance(Cql2Parser.IntervalInstanceContext ctx) {
-        return null;
+        return Args(ctx.instantParameter());
     }
 
     @Override
     public JsonNode visitInstantParameter(Cql2Parser.InstantParameterContext ctx) {
+        if (ctx.CharacterLiteral() != null) return visit(ctx.CharacterLiteral());
+        if (ctx.dateInstant() != null) return visit(ctx.dateInstant());
+        if (ctx.timestampInstant() != null) return visit(ctx.dateInstant());
+        if (ctx.propertyName() != null) return visit(ctx.propertyName());
+        if (ctx.function() != null) return visit(ctx.function());
+        if (ctx.DDOT() != null) return objectMapper.valueToTree(ctx.DDOT().getText());
         return null;
     }
 
