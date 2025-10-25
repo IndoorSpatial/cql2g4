@@ -35,7 +35,7 @@ comparisonPredicate : binaryComparisonPredicate
                     ;
 
 //  Binary comparison predicate
-binaryComparisonPredicate : scalarExpression comparisonOperator scalarExpression;
+binaryComparisonPredicate : scalarExpression COMP_OP scalarExpression;
 
 scalarExpression : propertyName
                  | function
@@ -45,8 +45,6 @@ scalarExpression : propertyName
                  | booleanLiteral
                  | arithmeticExpression
                  ;
-
-comparisonOperator : COMP;
 
 //  LIKE predicate
 isLikePredicate :  characterExpression NOT? LIKE patternExpression;
@@ -87,12 +85,10 @@ isNullOperand : propertyName
 //  condition implied by a standardized spatial comparison function.  If the
 //  conditions of the spatial comparison function are met, the function returns
 //  a Boolean value of true.  Otherwise the function returns false.
-spatialPredicate : spatialFunction LP geomExpression COMMA geomExpression RP;
-
 //  NOTE: The buffer functions (DWITHIN and BEYOND) are not included because
 //        these are outside the scope of a 'simple' core for CQL2.  These
 //        can be added as extensions.
-spatialFunction : SPATIAL;
+spatialPredicate : SPATIAL_FUNC LP geomExpression COMMA geomExpression RP;
 
 //  A geometric expression is a property name of a geometry-valued property,
 //  a geometric literal (expressed as WKT) or a function that returns a
@@ -106,8 +102,7 @@ geomExpression : spatialInstance
 //  condition implied by a standardized temporal comparison function.  If the
 //  conditions of the temporal comparison function are met, the function returns
 //  a Boolean value of true.  Otherwise the function returns false.
-temporalFunction : TEMPORAL;
-temporalPredicate : temporalFunction LP temporalExpression COMMA temporalExpression RP;
+temporalPredicate : TEMPORAL_FUNC LP temporalExpression COMMA temporalExpression RP;
 
 temporalExpression : temporalInstance
                    | propertyName
@@ -119,8 +114,7 @@ temporalExpression : temporalInstance
 //  condition implied by a standardized array comparison function.  If the
 //  conditions of the array comparison function are met, the function returns
 //  a Boolean value of true.  Otherwise the function returns false.
-arrayFunction : ARRAY;
-arrayPredicate : arrayFunction LP arrayExpression COMMA arrayExpression RP;
+arrayPredicate : ARRAY_FUNC LP arrayExpression COMMA arrayExpression RP;
 
 arrayExpression : array
                 | propertyName

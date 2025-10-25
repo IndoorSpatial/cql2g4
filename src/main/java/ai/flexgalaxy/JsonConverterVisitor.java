@@ -16,13 +16,10 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public JsonConverterVisitor() {
-
-    }
+    public JsonConverterVisitor() {}
 
     String toJsonString(ParseTree tree) throws JsonProcessingException {
-        JsonNode j = visit(tree);
-        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(j);
+        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(visit(tree));
     }
 
     @Override
@@ -75,11 +72,20 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitPredicate(Cql2Parser.PredicateContext ctx) {
+        if (ctx.comparisonPredicate() != null) return visit(ctx.comparisonPredicate());
+        if (ctx.spatialPredicate() != null) return visit(ctx.spatialPredicate());
+        if (ctx.temporalPredicate() != null) return visit(ctx.temporalPredicate());
+        if (ctx.arrayPredicate() != null) return visit(ctx.arrayPredicate());
         return null;
     }
 
     @Override
     public JsonNode visitComparisonPredicate(Cql2Parser.ComparisonPredicateContext ctx) {
+        if (ctx.binaryComparisonPredicate() != null) return visit(ctx.binaryComparisonPredicate());
+        if (ctx.isLikePredicate() != null) return visit(ctx.isLikePredicate());
+        if (ctx.isBetweenPredicate() != null) return visit(ctx.isBetweenPredicate());
+        if (ctx.isInListPredicate() != null) return visit(ctx.isInListPredicate());
+        if (ctx.isNullPredicate() != null) return visit(ctx.isNullPredicate());
         return null;
     }
 
@@ -90,11 +96,6 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitScalarExpression(Cql2Parser.ScalarExpressionContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitComparisonOperator(Cql2Parser.ComparisonOperatorContext ctx) {
         return null;
     }
 
@@ -144,17 +145,7 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
     }
 
     @Override
-    public JsonNode visitSpatialFunction(Cql2Parser.SpatialFunctionContext ctx) {
-        return null;
-    }
-
-    @Override
     public JsonNode visitGeomExpression(Cql2Parser.GeomExpressionContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitTemporalFunction(Cql2Parser.TemporalFunctionContext ctx) {
         return null;
     }
 
@@ -165,11 +156,6 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitTemporalExpression(Cql2Parser.TemporalExpressionContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitArrayFunction(Cql2Parser.ArrayFunctionContext ctx) {
         return null;
     }
 
@@ -457,11 +443,6 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
     public JsonNode visitInstantParameter(Cql2Parser.InstantParameterContext ctx) {
         return null;
     }
-
-//    @Override
-//    public JsonNode visit(ParseTree tree) {
-//        return null;
-//    }
 
     @Override
     public JsonNode visitChildren(RuleNode node) {

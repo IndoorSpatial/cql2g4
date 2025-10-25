@@ -1,102 +1,94 @@
 lexer grammar Cql2Lexer;
 
-LP: '(';
-RP: ')';
-COMMA: ',';
-DOT: '.';
-DDOT: '..';
-SQ: '\'';
-DQ: '"';
-COLON: ':';
+LP    : '(';
+RP    : ')';
+COMMA : ',';
+DOT   : '.';
+DDOT  : '..';
+SQ    : '\'';
+DQ    : '"';
+COLON : ':';
 
 BOOL : 'TRUE' | 'FALSE' | 'true' | 'false';
-AND : 'AND' | 'and';
-OR : 'OR' | 'or';
-NOT : 'NOT' | 'not';
+AND  : 'AND'  | 'and';
+OR   : 'OR'   | 'or';
+NOT  : 'NOT'  | 'not';
 
-COMP : '='      //  equal
-     | '<' '>'  //  not equal
-     | '<'      //  less than
-     | '>'      //  greater than
-     | '<' '='  //  less than or equal
-     | '>' '='  //  greater than or equal
-     ;
-
-SPATIAL : 'S_INTERSECTS' | 's_intersects'
-        | 'S_EQUALS' | 's_equals'
-        | 'S_DISJOINT' | 's_disjoint'
-        | 'S_TOUCHES' | 's_touches'
-        | 'S_WITHIN' | 's_within'
-        | 'S_OVERLAPS' | 's_overlaps'
-        | 'S_CROSSES' | 's_crosses'
-        | 'S_CONTAINS' | 's_contains'
+COMP_OP : '='      //  equal
+        | '<' '>'  //  not equal
+        | '<'      //  less than
+        | '>'      //  greater than
+        | '<' '='  //  less than or equal
+        | '>' '='  //  greater than or equal
         ;
 
-POINT : 'POINT';
+SPATIAL_FUNC : 'S_INTERSECTS' | 's_intersects'
+             | 'S_EQUALS'     | 's_equals'
+             | 'S_DISJOINT'   | 's_disjoint'
+             | 'S_TOUCHES'    | 's_touches'
+             | 'S_WITHIN'     | 's_within'
+             | 'S_OVERLAPS'   | 's_overlaps'
+             | 'S_CROSSES'    | 's_crosses'
+             | 'S_CONTAINS'   | 's_contains'
+             ;
+
+POINT      : 'POINT';
 LINESTRING : 'LINESTRING';
-POLYGON : 'POLYGON';
-MULTIPOINT : 'MULTIPOINT';
+POLYGON    : 'POLYGON';
+MULTIPOINT      : 'MULTIPOINT';
 MULTILINESTRING : 'MULTILINESTRING';
-MULTIPOLYGON : 'MULTIPOLYGON';
+MULTIPOLYGON    : 'MULTIPOLYGON';
 GEOMETRYCOLLECTION : 'GEOMETRYCOLLECTION';
 Z : 'Z' | 'M' | 'ZM';
 BBOX : 'BBOX';
 
-TEMPORAL : 'T_AFTER' | 't_after'
-         | 'T_BEFORE' | 't_before'
-         | 'T_CONTAINS' | 't_contains'
-         | 'T_DISJOINT' | 't_disjoint'
-         | 'T_DURING' | 't_during'
-         | 'T_EQUALS' | 't_equals'
-         | 'T_FINISHEDBY' | 't_finishedby'
-         | 'T_FINISHES' | 't_finishes'
-         | 'T_INTERSECTS' | 't_intersects'
-         | 'T_MEETS' | 't_meets'
-         | 'T_METBY' | 't_metby'
-         | 'T_OVERLAPPEDBY' | 't_overlappedby'
-         | 'T_OVERLAPS' | 't_overlaps'
-         | 'T_STARTEDBY' | 't_startedby'
-         | 'T_STARTS' | 't_starts'
-         ;
+TEMPORAL_FUNC : 'T_AFTER'        | 't_after'
+              | 'T_BEFORE'       | 't_before'
+              | 'T_CONTAINS'     | 't_contains'
+              | 'T_DISJOINT'     | 't_disjoint'
+              | 'T_DURING'       | 't_during'
+              | 'T_EQUALS'       | 't_equals'
+              | 'T_FINISHEDBY'   | 't_finishedby'
+              | 'T_FINISHES'     | 't_finishes'
+              | 'T_INTERSECTS'   | 't_intersects'
+              | 'T_MEETS'        | 't_meets'
+              | 'T_METBY'        | 't_metby'
+              | 'T_OVERLAPPEDBY' | 't_overlappedby'
+              | 'T_OVERLAPS'     | 't_overlaps'
+              | 'T_STARTEDBY'    | 't_startedby'
+              | 'T_STARTS'       | 't_starts'
+              ;
 
-ARRAY : 'A_EQUALS' | 'a_equals'
-      | 'A_CONTAINS' | 'a_contains'
-      | 'A_CONTAINEDBY' | 'a_containedby'
-      | 'A_OVERLAPS' | 'a_overlaps'
-      ;
+ARRAY_FUNC : 'A_EQUALS'      | 'a_equals'
+           | 'A_CONTAINS'    | 'a_contains'
+           | 'A_CONTAINEDBY' | 'a_containedby'
+           | 'A_OVERLAPS'    | 'a_overlaps'
+           ;
 
 
-LIKE : 'LIKE' | 'like';
-CASEI : 'CASEI' | 'casei';
+LIKE    : 'LIKE'    | 'like';
+CASEI   : 'CASEI'   | 'casei';
 ACCENTI : 'ACCENTI' | 'accenti';
-
 BETWEEN : 'BETWEEN' | 'between';
+IN      : 'IN'      | 'in';
+IS      : 'IS'      | 'is';
+NULL    : 'NULL'    | 'null';
 
-IN : 'IN' | 'in';
-IS : 'IS' | 'is';
-NULL : 'NULL' | 'null';
-
-//DASH: '-';
 Sign : '+' | '-';
-ArithmeticOperatorPlusMinus : '+' | '-';
-
+//ArithmeticOperatorPlusMinus : '+' | '-';
 ArithmeticOperatorMultDiv : '*' | '/' | '%' | 'div';
 POWER : '^';
 EXP : 'E';
-TIMESTAMP: 'TIMESTAMP' | 'timestamp';
-DATE: 'DATE' | 'date';
-//TIMESTAMP : 'TIMESTAMP' -> pushMode(TIME_MODE);
-//Timestamp : 'timestamp' -> pushMode(TIME_MODE);
-//DATE : 'DATE' -> pushMode(TIME_MODE);
-//Date : 'date' -> pushMode(TIME_MODE);
-INTERVAL : 'INTERVAL' | 'interval';
+
+TIMESTAMP : 'TIMESTAMP' | 'timestamp';
+DATE      : 'DATE'      | 'date';
+INTERVAL  : 'INTERVAL'  | 'interval';
 
 Identifier : IdentifierStart IdentifierPart*
            | IdentifierStart;
 
 COMBINING_MARKS : '\u0300'..'\u036F';  //  combining and diacritical marks
 TIE_SYMBOLS : '\u203F'..'\u2040';      //  ‿ and ⁀
-
 fragment
 IdentifierPart : IdentifierStart
                | '.'                    //  '\u002E'
@@ -104,7 +96,6 @@ IdentifierPart : IdentifierStart
                | COMBINING_MARKS
                | TIE_SYMBOLS
                ;
-
 fragment
 IdentifierStart : '\u003A'              //  colon
                 | '\u005F'              //  underscore
@@ -151,6 +142,7 @@ Alpha : '\u0007'..'\u0008'     //  bell, bs
 
 fragment
 Digit : '\u0030'..'\u0039';
+UnsignedInteger : Digit+;
 
 fragment
 Whitespace : '\u0009'  //  Character tabulation
@@ -180,12 +172,3 @@ Whitespace : '\u0009'  //  Character tabulation
            | '\u3000'  //  Ideographic space
            ;
 WS : Whitespace+ -> skip;
-
-UnsignedInteger : Digit+;
-TIME: 'T';
-
-//mode TIME_MODE;
-//T_LP: '(';
-//T_RP: ')' -> popMode;
-//T_SQ: '\'';
-//T_INSTANT: [0-9\-:TZ]+;
