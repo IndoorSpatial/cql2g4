@@ -22,6 +22,9 @@ dependencies {
     implementation "com.fasterxml.jackson.core:jackson-core:2.19.1"
     implementation "com.fasterxml.jackson.core:jackson-databind:2.19.1"
 
+    implementation 'org.locationtech.jts:jts-core:1.19.0'
+    implementation 'org.locationtech.jts.io:jts-io-common:1.19.0'
+
     antlr "org.antlr:antlr4:4.13.2"
     antlrTool "org.antlr:antlr4:4.13.2"
 }

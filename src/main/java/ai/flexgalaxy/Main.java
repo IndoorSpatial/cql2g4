@@ -21,7 +21,8 @@ public class Main {
 
         ParseTree tree = parser.booleanExpression();
 
-        JsonConverterVisitor visitor = new JsonConverterVisitor();
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        JsonConverterVisitor visitor = new JsonConverterVisitor(tokens);
 
         System.out.println(tree.toStringTree(parser));
         System.out.println(visitor.toJsonString(tree));

@@ -18,13 +18,13 @@ import java.nio.file.Paths;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class JsonConverterVisitorTest {
-    private static final JsonConverterVisitor jsonConverterVisitor = new JsonConverterVisitor();
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final String textPrefix = "schema/1.0/examples/text/";
     private final String jsonPrefix = "schema/1.0/examples/json/";
     private final String projectRoot = System.getProperty("user.dir");
 
+    public JsonConverterVisitorTest() {}
 
     public void convertTest() {
         String testName = Thread.currentThread().getStackTrace()[2].getMethodName().replace("_alt", "-alt");
@@ -41,9 +41,11 @@ public class JsonConverterVisitorTest {
 
             // parse and convert to json
             Cql2Lexer lexer = new Cql2Lexer(CharStreams.fromString(contentText));
-            Cql2Parser parser = new Cql2Parser(new CommonTokenStream(lexer));
+            CommonTokenStream tokens = new CommonTokenStream(lexer);
+            Cql2Parser parser = new Cql2Parser(tokens);
             ParseTree tree = parser.booleanExpression();
-            String convertResult = jsonConverterVisitor.toJsonString(tree);
+            JsonConverterVisitor visitor = new JsonConverterVisitor(tokens);
+            String convertResult = visitor.toJsonString(tree);
 
             // read expect json
             String contentJson = Files.readString(pathJson, java.nio.charset.StandardCharsets.UTF_8);

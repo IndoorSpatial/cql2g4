@@ -1,5 +1,13 @@
 package ai.flexgalaxy;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.misc.Interval;
+import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.io.geojson.GeoJsonWriter;
+
 import ai.flexgalaxy.Cql2g4.Cql2Parser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,10 +25,13 @@ import java.util.Arrays;
 import java.util.List;
 
 public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<JsonNode> {
-
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final GeoJsonWriter writer = new  GeoJsonWriter();
+    private final WKTReader reader = new WKTReader();
+    private final CommonTokenStream tokens;
 
-    public JsonConverterVisitor() {
+    public JsonConverterVisitor(CommonTokenStream tokens) {
+        this.tokens = tokens;
     }
 
     public String toJsonString(ParseTree tree) throws JsonProcessingException {
@@ -77,6 +88,13 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
         if (str.charAt(0) == character && str.charAt(str.length() - 1) == character)
             return str.substring(1, str.length() - 1);
         return str;
+    }
+
+    private JsonNode parseNumber(String str) {
+        if (str.contains(String.valueOf('.')))
+            return objectMapper.valueToTree(Double.parseDouble(str));
+        else
+            return objectMapper.valueToTree(Integer.parseInt(str));
     }
 
     @Override
@@ -382,10 +400,7 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitNumericLiteral(Cql2Parser.NumericLiteralContext ctx) {
-        if (ctx.getText().contains(String.valueOf('.')))
-            return objectMapper.valueToTree(Double.parseDouble(ctx.getText()));
-        else
-            return objectMapper.valueToTree(Integer.parseInt(ctx.getText()));
+        return parseNumber(ctx.getText());
     }
 
     @Override
@@ -403,7 +418,17 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitGeometryLiteral(Cql2Parser.GeometryLiteralContext ctx) {
-        return objectMapper.valueToTree(ctx.getText());
+        try {
+            String originalText = tokens.getText(ctx.getSourceInterval());
+            Geometry geom = reader.read(originalText);
+            String geojson = writer.write(geom);
+            ObjectNode node = (ObjectNode)objectMapper.readTree(geojson);
+            if (node.has("crs"))
+                node.remove("crs");
+            return node;
+        } catch (ParseException | JsonProcessingException e) {
+            return null;
+        }
     }
 
     @Override
@@ -509,14 +534,14 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
     @Override
     public JsonNode visitBboxText(Cql2Parser.BboxTextContext ctx) {
         ArrayNode array = objectMapper.createArrayNode();
-        array.add(Double.parseDouble(ctx.westBoundLon().getText()));
-        array.add(Double.parseDouble(ctx.southBoundLat().getText()));
+        array.add(parseNumber(ctx.westBoundLon().getText()));
+        array.add(parseNumber(ctx.southBoundLat().getText()));
         if (ctx.minElev() != null)
-            array.add(Double.parseDouble(ctx.minElev().getText()));
-        array.add(Double.parseDouble(ctx.eastBoundLon().getText()));
-        array.add(Double.parseDouble(ctx.northBoundLat().getText()));
+            array.add(parseNumber(ctx.minElev().getText()));
+        array.add(parseNumber(ctx.eastBoundLon().getText()));
+        array.add(parseNumber(ctx.northBoundLat().getText()));
         if (ctx.maxElev() != null)
-            array.add(Double.parseDouble(ctx.maxElev().getText()));
+            array.add(parseNumber(ctx.maxElev().getText()));
         return array;
     }
 

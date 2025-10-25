@@ -171,4 +171,4 @@ Whitespace : '\u0009'  //  Character tabulation
            | '\u205F'  //  Medium mathematical space
            | '\u3000'  //  Ideographic space
            ;
-WS : Whitespace+ -> skip;
+WS : Whitespace+ -> channel(HIDDEN);
