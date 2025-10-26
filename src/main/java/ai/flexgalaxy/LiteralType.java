@@ -1,6 +1,7 @@
 package ai.flexgalaxy;
 
 public enum LiteralType {
+    Property,
     Boolean,
     Integer,
     Double,
