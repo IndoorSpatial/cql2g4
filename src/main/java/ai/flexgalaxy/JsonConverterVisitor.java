@@ -601,12 +601,15 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitIntervalInstance(Cql2Parser.IntervalInstanceContext ctx) {
-        return Args(ctx.instantParameter());
+        ObjectNode n = objectMapper.createObjectNode();
+        n.set("interval", Args(ctx.instantParameter()));
+        return n;
     }
 
     @Override
     public JsonNode visitInstantParameter(Cql2Parser.InstantParameterContext ctx) {
-        if (ctx.CharacterLiteral() != null) return visit(ctx.CharacterLiteral());
+        if (ctx.CharacterLiteral() != null) return objectMapper.valueToTree(trim(ctx.CharacterLiteral().getText(), '\''));
+
         if (ctx.dateInstant() != null) return visit(ctx.dateInstant());
         if (ctx.timestampInstant() != null) return visit(ctx.dateInstant());
         if (ctx.propertyName() != null) return visit(ctx.propertyName());
