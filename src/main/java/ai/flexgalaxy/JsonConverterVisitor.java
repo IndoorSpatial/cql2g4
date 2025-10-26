@@ -10,7 +10,6 @@ import java.util.Locale;
 
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.ParseTree;
 
 import ai.flexgalaxy.Cql2g4.Cql2Parser;
 
@@ -388,7 +387,7 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitBooleanLiteral(Cql2Parser.BooleanLiteralContext ctx) {
-        return objectMapper.valueToTree(ctx.BOOL().getText().toUpperCase().equals("TRUE"));
+        return objectMapper.valueToTree(ctx.BOOL().getText().equalsIgnoreCase("TRUE"));
     }
 
     @Override
