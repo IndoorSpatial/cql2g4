@@ -3,6 +3,8 @@ package ai.flexgalaxy;
 import ai.flexgalaxy.Cql2g4.Cql2Lexer;
 import ai.flexgalaxy.Cql2g4.Cql2Parser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -17,14 +19,15 @@ public class Main {
                                         43.7320 -79.2942, 43.7322 -79.2937, 43.7306 -79.2930,
                                         43.7303 -79.2930, 43.7299 -79.2928, 43.7286 -79.2986)))
                 """));
-        Cql2Parser parser = new Cql2Parser(new CommonTokenStream(lexer));
-
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        Cql2Parser parser = new Cql2Parser(tokens);
         ParseTree tree = parser.booleanExpression();
 
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
         JsonConverterVisitor visitor = new JsonConverterVisitor(tokens);
+        JsonNode convertJsonResult = visitor.visit(tree);
 
         System.out.println(tree.toStringTree(parser));
-        System.out.println(visitor.toJsonString(tree));
+        ObjectMapper objectMapper = new ObjectMapper();
+        System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(convertJsonResult));
     }
 }

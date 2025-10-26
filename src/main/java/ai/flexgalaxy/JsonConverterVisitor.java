@@ -1,24 +1,5 @@
 package ai.flexgalaxy;
 
-import org.antlr.v4.runtime.CommonTokenStream;
-import org.locationtech.jts.geom.Geometry;
-import org.locationtech.jts.io.ParseException;
-import org.locationtech.jts.io.WKTReader;
-import org.locationtech.jts.io.geojson.GeoJsonWriter;
-
-import ai.flexgalaxy.Cql2g4.Cql2Parser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.tree.ErrorNode;
-import org.antlr.v4.runtime.tree.ParseTree;
-import org.antlr.v4.runtime.tree.RuleNode;
-import org.antlr.v4.runtime.tree.TerminalNode;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -26,6 +7,22 @@ import java.time.temporal.ChronoField;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ParseTree;
+
+import ai.flexgalaxy.Cql2g4.Cql2Parser;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import org.locationtech.jts.io.ParseException;
+import org.locationtech.jts.io.WKTReader;
+import org.locationtech.jts.io.geojson.GeoJsonWriter;
 
 public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<JsonNode> {
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -41,10 +38,6 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
     public JsonConverterVisitor(CommonTokenStream tokens) {
         this.tokens = tokens;
         writer.setEncodeCRS(false);
-    }
-
-    public String toJsonString(ParseTree tree) throws JsonProcessingException {
-        return objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(visit(tree));
     }
 
     private JsonNode Not(JsonNode node) {
