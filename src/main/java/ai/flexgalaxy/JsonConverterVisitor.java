@@ -1,8 +1,6 @@
 package ai.flexgalaxy;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.misc.Interval;
 import org.locationtech.jts.geom.Geometry;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
@@ -32,6 +30,7 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     public JsonConverterVisitor(CommonTokenStream tokens) {
         this.tokens = tokens;
+        writer.setEncodeCRS(false);
     }
 
     public String toJsonString(ParseTree tree) throws JsonProcessingException {
@@ -88,6 +87,17 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
         if (str.charAt(0) == character && str.charAt(str.length() - 1) == character)
             return str.substring(1, str.length() - 1);
         return str;
+    }
+
+    private static String toLowerCase(String str) {
+        String lowerCase = str.toLowerCase();
+        if (lowerCase.endsWith("by")) {
+            char[] chars = lowerCase.toCharArray();
+            chars[lowerCase.length() - 2] = 'B';
+            return new String(chars);
+        } else {
+            return lowerCase;
+        }
     }
 
     private JsonNode parseNumber(String str) {
@@ -242,7 +252,7 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitTemporalPredicate(Cql2Parser.TemporalPredicateContext ctx) {
-        return OpArgs(ctx.TEMPORAL_FUNC().getText().toLowerCase(), ctx.temporalExpression());
+        return OpArgs(toLowerCase(ctx.TEMPORAL_FUNC().getText()), ctx.temporalExpression());
     }
 
     @Override
@@ -255,7 +265,7 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitArrayPredicate(Cql2Parser.ArrayPredicateContext ctx) {
-        return OpArgs(ctx.ARRAY_FUNC().getText().toLowerCase(), ctx.arrayExpression());
+        return OpArgs(toLowerCase(ctx.ARRAY_FUNC().getText()), ctx.arrayExpression());
     }
 
     @Override
@@ -420,12 +430,7 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
     public JsonNode visitGeometryLiteral(Cql2Parser.GeometryLiteralContext ctx) {
         try {
             String originalText = tokens.getText(ctx.getSourceInterval());
-            Geometry geom = reader.read(originalText);
-            String geojson = writer.write(geom);
-            ObjectNode node = (ObjectNode)objectMapper.readTree(geojson);
-            if (node.has("crs"))
-                node.remove("crs");
-            return node;
+            return objectMapper.readTree(writer.write(reader.read(originalText)));
         } catch (ParseException | JsonProcessingException e) {
             return null;
         }
@@ -463,7 +468,12 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitGeometryCollectionTaggedText(Cql2Parser.GeometryCollectionTaggedTextContext ctx) {
-        return null;
+        try {
+            String originalText = tokens.getText(ctx.getSourceInterval());
+            return objectMapper.readTree(writer.write(reader.read(originalText)));
+        } catch (ParseException | JsonProcessingException e) {
+            return null;
+        }
     }
 
     @Override

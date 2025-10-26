@@ -5,6 +5,7 @@ import ai.flexgalaxy.Cql2g4.Cql2Parser;
 import ai.flexgalaxy.JsonConverterVisitor;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.NumericNode;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -24,7 +25,8 @@ public class JsonConverterVisitorTest {
     private final String jsonPrefix = "schema/1.0/examples/json/";
     private final String projectRoot = System.getProperty("user.dir");
 
-    public JsonConverterVisitorTest() {}
+    public JsonConverterVisitorTest() {
+    }
 
     public void convertTest() {
         String testName = Thread.currentThread().getStackTrace()[2].getMethodName().replace("_alt", "-alt");
@@ -45,15 +47,23 @@ public class JsonConverterVisitorTest {
             Cql2Parser parser = new Cql2Parser(tokens);
             ParseTree tree = parser.booleanExpression();
             JsonConverterVisitor visitor = new JsonConverterVisitor(tokens);
-            String convertResult = visitor.toJsonString(tree);
+            JsonNode convertJsonResult = visitor.visit(tree);
 
             // read expect json
             String contentJson = Files.readString(pathJson, java.nio.charset.StandardCharsets.UTF_8);
-            JsonNode jsonNode = objectMapper.readTree(contentJson);
-            String expectResult = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(jsonNode);
+            JsonNode expectJsonNode = objectMapper.readTree(contentJson);
 
             // compare them
-            assertEquals(expectResult, convertResult);
+            assertTrue(convertJsonResult.equals((lhs, rhs) -> {
+                if (lhs.equals(rhs))
+                    return 0;
+                if ((lhs instanceof NumericNode) && (rhs instanceof NumericNode)) {
+                    Double ld = lhs.asDouble();
+                    Double rd = rhs.asDouble();
+                    return ld.compareTo(rd);
+                }
+                return 1;
+            }, expectJsonNode));
         } catch (IOException e) {
             fail();
         }
