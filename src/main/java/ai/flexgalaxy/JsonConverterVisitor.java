@@ -19,14 +19,24 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.temporal.ChronoField;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<JsonNode> {
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final GeoJsonWriter writer = new  GeoJsonWriter();
+    private final GeoJsonWriter writer = new GeoJsonWriter();
     private final WKTReader reader = new WKTReader();
     private final CommonTokenStream tokens;
+    private final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+            .appendPattern("yyyy-MM-dd'T'HH:mm:ss")
+            .appendFraction(ChronoField.NANO_OF_SECOND, 0, 9, true)
+            .appendLiteral("Z")
+            .toFormatter(Locale.ROOT);
 
     public JsonConverterVisitor(CommonTokenStream tokens) {
         this.tokens = tokens;
@@ -345,11 +355,6 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
     }
 
     @Override
-    public JsonNode visitArgumentList(Cql2Parser.ArgumentListContext ctx) {
-        return null;
-    }
-
-    @Override
     public JsonNode visitArgument(Cql2Parser.ArgumentContext ctx) {
         if (ctx.propertyName() != null) return visit(ctx.propertyName());
         if (ctx.characterClause() != null) return visit(ctx.characterClause());
@@ -384,31 +389,6 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
     }
 
     @Override
-    public JsonNode visitSignedInteger(Cql2Parser.SignedIntegerContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitDecimalNumericLiteral(Cql2Parser.DecimalNumericLiteralContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitScientificNumericLiteral(Cql2Parser.ScientificNumericLiteralContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitUnsignedNumericLiteral(Cql2Parser.UnsignedNumericLiteralContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitSignedNumericLiteral(Cql2Parser.SignedNumericLiteralContext ctx) {
-        return null;
-    }
-
-    @Override
     public JsonNode visitNumericLiteral(Cql2Parser.NumericLiteralContext ctx) {
         return parseNumber(ctx.getText());
     }
@@ -437,36 +417,6 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
     }
 
     @Override
-    public JsonNode visitPointTaggedText(Cql2Parser.PointTaggedTextContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitLinestringTaggedText(Cql2Parser.LinestringTaggedTextContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitPolygonTaggedText(Cql2Parser.PolygonTaggedTextContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitMultipointTaggedText(Cql2Parser.MultipointTaggedTextContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitMultilinestringTaggedText(Cql2Parser.MultilinestringTaggedTextContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitMultipolygonTaggedText(Cql2Parser.MultipolygonTaggedTextContext ctx) {
-        return null;
-    }
-
-    @Override
     public JsonNode visitGeometryCollectionTaggedText(Cql2Parser.GeometryCollectionTaggedTextContext ctx) {
         try {
             String originalText = tokens.getText(ctx.getSourceInterval());
@@ -474,66 +424,6 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
         } catch (ParseException | JsonProcessingException e) {
             return null;
         }
-    }
-
-    @Override
-    public JsonNode visitPointText(Cql2Parser.PointTextContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitPoint(Cql2Parser.PointContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitXCoord(Cql2Parser.XCoordContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitYCoord(Cql2Parser.YCoordContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitZCoord(Cql2Parser.ZCoordContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitLineStringText(Cql2Parser.LineStringTextContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitLinearRingText(Cql2Parser.LinearRingTextContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitPolygonText(Cql2Parser.PolygonTextContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitMultiPointText(Cql2Parser.MultiPointTextContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitMultiLineStringText(Cql2Parser.MultiLineStringTextContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitMultiPolygonText(Cql2Parser.MultiPolygonTextContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitGeometryCollectionText(Cql2Parser.GeometryCollectionTextContext ctx) {
-        return null;
     }
 
     @Override
@@ -553,36 +443,6 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
         if (ctx.maxElev() != null)
             array.add(parseNumber(ctx.maxElev().getText()));
         return array;
-    }
-
-    @Override
-    public JsonNode visitWestBoundLon(Cql2Parser.WestBoundLonContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitEastBoundLon(Cql2Parser.EastBoundLonContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitNorthBoundLat(Cql2Parser.NorthBoundLatContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitSouthBoundLat(Cql2Parser.SouthBoundLatContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitMinElev(Cql2Parser.MinElevContext ctx) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitMaxElev(Cql2Parser.MaxElevContext ctx) {
-        return null;
     }
 
     @Override
@@ -606,7 +466,9 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitTimestampInstant(Cql2Parser.TimestampInstantContext ctx) {
-        return objectMapper.createObjectNode().put("timestamp", trim(ctx.CharacterLiteral().getText(), '\''));
+        String trimed = trim(ctx.CharacterLiteral().getText(), '\'');
+        OffsetDateTime odt = OffsetDateTime.parse(trimed, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+        return objectMapper.createObjectNode().put("timestamp", odt.format(formatter));
     }
 
     @Override
@@ -618,28 +480,21 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
 
     @Override
     public JsonNode visitInstantParameter(Cql2Parser.InstantParameterContext ctx) {
-        if (ctx.CharacterLiteral() != null) return objectMapper.valueToTree(trim(ctx.CharacterLiteral().getText(), '\''));
+        if (ctx.CharacterLiteral() != null) {
+            String trimed = trim(ctx.CharacterLiteral().getText(), '\'');
+            if (trimed.equals("..") || !trimed.contains("T")) {
+                return objectMapper.valueToTree(trimed);
+            } else {
+                OffsetDateTime odt = OffsetDateTime.parse(trimed, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                return objectMapper.valueToTree(odt.format(formatter));
+            }
+        }
 
         if (ctx.dateInstant() != null) return visit(ctx.dateInstant());
         if (ctx.timestampInstant() != null) return visit(ctx.dateInstant());
         if (ctx.propertyName() != null) return visit(ctx.propertyName());
         if (ctx.function() != null) return visit(ctx.function());
         if (ctx.DDOT() != null) return objectMapper.valueToTree(ctx.DDOT().getText());
-        return null;
-    }
-
-    @Override
-    public JsonNode visitChildren(RuleNode node) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitTerminal(TerminalNode node) {
-        return null;
-    }
-
-    @Override
-    public JsonNode visitErrorNode(ErrorNode node) {
         return null;
     }
 }

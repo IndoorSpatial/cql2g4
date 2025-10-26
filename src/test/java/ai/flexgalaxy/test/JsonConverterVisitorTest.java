@@ -41,11 +41,14 @@ public class JsonConverterVisitorTest {
             String contentText = Files.readString(pathTxt, java.nio.charset.StandardCharsets.UTF_8);
             System.out.println(contentText);
 
-            // parse and convert to json
+            // parse
             Cql2Lexer lexer = new Cql2Lexer(CharStreams.fromString(contentText));
             CommonTokenStream tokens = new CommonTokenStream(lexer);
             Cql2Parser parser = new Cql2Parser(tokens);
             ParseTree tree = parser.booleanExpression();
+            System.out.println(tree.toStringTree(parser));
+
+            // convert to json
             JsonConverterVisitor visitor = new JsonConverterVisitor(tokens);
             JsonNode convertJsonResult = visitor.visit(tree);
 
@@ -53,6 +56,8 @@ public class JsonConverterVisitorTest {
             String contentJson = Files.readString(pathJson, java.nio.charset.StandardCharsets.UTF_8);
             JsonNode expectJsonNode = objectMapper.readTree(contentJson);
 
+            System.out.println(objectMapper.writeValueAsString(expectJsonNode));
+            System.out.println(objectMapper.writeValueAsString(convertJsonResult));
             // compare them
             assertTrue(convertJsonResult.equals((lhs, rhs) -> {
                 if (lhs.equals(rhs))
