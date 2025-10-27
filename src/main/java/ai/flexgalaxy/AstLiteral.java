@@ -1,14 +1,15 @@
 package ai.flexgalaxy;
 
-import java.util.ArrayList;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 public class AstLiteral extends AstNode {
-    LiteralType literalType;
     Object value;
 
     public AstLiteral(LiteralType literalType, Object value) {
-        super("", literalType.name(), new ArrayList<>());
-        this.literalType = literalType;
+        super(null, literalType.name(), null);
         this.value = value;
     }
 
