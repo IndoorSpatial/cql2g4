@@ -62,6 +62,7 @@ class JsonNodeToASTTest {
         }
     }
 
+    // @formatter:off
     @Test public void clause6_01() { visit(); }
     @Test public void clause6_02a() { visit(); }
     @Test public void clause6_02b() { visit(); }
