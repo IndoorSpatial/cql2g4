@@ -7,9 +7,11 @@ import lombok.Setter;
 @Setter
 public class AstLiteral extends AstNode {
     Object value;
+    LiteralType literalType;
 
     public AstLiteral(LiteralType literalType, Object value) {
         super(null, literalType.name(), null);
+        this.literalType = literalType;
         this.value = value;
     }
 

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.NumericNode;
 import org.junit.jupiter.api.Test;
 import org.locationtech.jts.geom.Geometry;
 
@@ -19,7 +20,8 @@ class JsonNodeToASTTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final String jsonPrefix = "schema/1.0/examples/json/";
     private final String projectRoot = System.getProperty("user.dir");
-    JsonNodeToAST converter = new JsonNodeToAST();
+    JsonNodeToAST toAst = new JsonNodeToAST();
+    AstToJsonNode toJson = new AstToJsonNode();
 
     public JsonNodeToASTTest() {
         objectMapper.setDefaultPropertyInclusion(
@@ -35,11 +37,25 @@ class JsonNodeToASTTest {
         Path pathJson = Paths.get(projectRoot, jsonPrefix + testName + ".json");
 
         try {
-            String contentJson = Files.readString(pathJson, java.nio.charset.StandardCharsets.UTF_8);
-            JsonNode json = objectMapper.readTree(contentJson);
-            System.out.println(objectMapper.writeValueAsString(json));
+            String originJsonContent = Files.readString(pathJson, java.nio.charset.StandardCharsets.UTF_8);
+            JsonNode originJson = objectMapper.readTree(originJsonContent);
+            System.out.println(objectMapper.writeValueAsString(originJson));
 
-            AstNode astNode = converter.visit(json);
+            AstNode astNode = toAst.visit(originJson);
+            JsonNode convertedJson = toJson.visit(astNode);
+            System.out.println(objectMapper.writeValueAsString(convertedJson));
+
+            assertTrue(originJson.equals((lhs, rhs) -> {
+                if (lhs.equals(rhs))
+                    return 0;
+                if ((lhs instanceof NumericNode) && (rhs instanceof NumericNode)) {
+                    Double ld = lhs.asDouble();
+                    Double rd = rhs.asDouble();
+                    return ld.compareTo(rd);
+                }
+                return 1;
+            }, convertedJson));
+
             System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(astNode));
         } catch (IOException e) {
             fail();

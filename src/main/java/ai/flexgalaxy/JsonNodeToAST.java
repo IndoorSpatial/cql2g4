@@ -17,8 +17,11 @@ public class JsonNodeToAST {
 
     public AstNode visit(JsonNode node) {
         if (node.isObject()) {
-            if (node.has("op") && node.has("args") && node.get("args").isArray())
-                return expr(node.get("op").asText(), node.get("args"));
+            if (node.has("op") && node.has("args") && node.get("args").isArray()) {
+                List<AstNode> list = new LinkedList<>();
+                node.get("args").forEach(arg -> list.add(visit(arg)));
+                return new AstNode(node.get("op").asText(), op2Type.type(node.get("op").asText()), list);
+            }
             if (node.has("interval"))
                 return new AstNode(null, "intervalInstance", readInterval(node));
             if (node.has("type") && node.has("coordinates"))
@@ -50,16 +53,6 @@ public class JsonNodeToAST {
             return new AstLiteral(LiteralType.Double, node.asDouble());
 
         throw new RuntimeException("unsupported type");
-    }
-    private List<AstNode> Args(JsonNode args) {
-        List<AstNode> list = new LinkedList<>();
-        for (JsonNode node : args)
-            list.add(visit(node));
-        return list;
-    }
-
-    private AstNode expr(String op, JsonNode args) {
-        return new AstNode(op, op2Type.type(op), Args(args));
     }
 
     private Geometry readGeoJson(JsonNode node) {
