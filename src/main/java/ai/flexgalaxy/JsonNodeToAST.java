@@ -11,13 +11,46 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class JsonNodeToAST {
-    private Op2Type op2Type = new Op2Type();
-    private ObjectMapper objectMapper = new ObjectMapper();
-    private GeoJsonReader reader = new GeoJsonReader();
+    private final Op2Type op2Type = new Op2Type();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final GeoJsonReader reader = new GeoJsonReader();
 
-    public JsonNodeToAST() {
+    public AstNode visit(JsonNode node) {
+        if (node.isObject()) {
+            if (node.has("op") && node.has("args") && node.get("args").isArray())
+                return expr(node.get("op").asText(), node.get("args"));
+            if (node.has("interval"))
+                return new AstNode(null, "intervalInstance", readInterval(node));
+            if (node.has("type") && node.has("coordinates"))
+                return new AstLiteral(LiteralType.Geometry, readGeoJson(node));
+            if (node.has("type") && node.has("geometries"))
+                return new AstLiteral(LiteralType.Geometry, readGeoJson(node));
+            if (node.has("bbox"))
+                return new AstLiteral(LiteralType.BBox, readBbox(node));
+            if (node.has("timestamp"))
+                return new AstLiteral(LiteralType.Timestamp, readTimestamp(node));
+            if (node.has("date"))
+                return new AstLiteral(LiteralType.Date, readDate(node));
+            if (node.has("property"))
+                return new AstLiteral(LiteralType.Property, readProperty(node));
+        }
+        if (node.isArray()) {
+            List<AstNode> list = new LinkedList<>();
+            node.forEach(item -> list.add(visit(item)));
+            return new AstNode(null, "arrayExpression", list);
+        }
+
+        if (node.isTextual())
+            return new AstLiteral(LiteralType.String, node.asText());
+        if (node.isBoolean())
+            return new AstLiteral(LiteralType.Boolean, node.asBoolean());
+        if (node.isIntegralNumber())
+            return new AstLiteral(LiteralType.Integer, node.asInt());
+        if (node.isNumber())
+            return new AstLiteral(LiteralType.Double, node.asDouble());
+
+        throw new RuntimeException("unsupported type");
     }
-
     private List<AstNode> Args(JsonNode args) {
         List<AstNode> list = new LinkedList<>();
         for (JsonNode node : args)
@@ -68,46 +101,5 @@ public class JsonNodeToAST {
 
     private String readProperty(JsonNode node) {
         return node.get("property").asText();
-    }
-
-    public AstNode visit(JsonNode node) {
-        if (node.isObject()) {
-            if (node.has("op") && node.has("args") && node.get("args").isArray())
-                return expr(node.get("op").asText(), node.get("args"));
-            if (node.has("interval"))
-                return new AstNode(null, "intervalInstance", readInterval(node));
-            if (node.has("type") && node.has("coordinates"))
-                return new AstLiteral(LiteralType.Geometry, readGeoJson(node));
-            if (node.has("type") && node.has("geometries"))
-                return new AstLiteral(LiteralType.Geometry, readGeoJson(node));
-            if (node.has("bbox"))
-                return new AstLiteral(LiteralType.BBox, readBbox(node));
-            if (node.has("timestamp"))
-                return new AstLiteral(LiteralType.Timestamp, readTimestamp(node));
-            if (node.has("date"))
-                return new AstLiteral(LiteralType.Date, readDate(node));
-            if (node.has("property"))
-                return new AstLiteral(LiteralType.Property, readProperty(node));
-        }
-        if (node.isArray()) {
-            List<AstNode> list = new LinkedList<>();
-            for (JsonNode item : node)
-                list.add(visit(item));
-            return new AstNode(null, "arrayExpression", list);
-        }
-
-        if (node.isTextual())
-            return new AstLiteral(LiteralType.String, node.asText());
-
-        if (node.isBoolean())
-            return new AstLiteral(LiteralType.Boolean, node.asBoolean());
-
-        if (node.isIntegralNumber())
-            return new AstLiteral(LiteralType.Integer, node.asInt());
-
-        if (node.isNumber())
-            return new AstLiteral(LiteralType.Double, node.asDouble());
-
-        throw new RuntimeException("unsupported type");
     }
 }

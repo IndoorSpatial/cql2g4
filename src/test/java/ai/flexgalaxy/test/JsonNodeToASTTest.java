@@ -2,7 +2,6 @@ package ai.flexgalaxy.test;
 
 import ai.flexgalaxy.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -17,7 +16,7 @@ import java.nio.file.Paths;
 import static org.junit.jupiter.api.Assertions.*;
 
 class JsonNodeToASTTest {
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
     private final String jsonPrefix = "schema/1.0/examples/json/";
     private final String projectRoot = System.getProperty("user.dir");
     JsonNodeToAST converter = new JsonNodeToAST();
