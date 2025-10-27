@@ -39,12 +39,12 @@ public class JsonNodeToAST {
     }
 
     private List<Double> readBbox(JsonNode node) {
-        if (node.get("bbox").isArray() && node.get("bbox").size() == 4) {
+        if (node.get("bbox").isArray() && (node.get("bbox").size() == 4 || node.get("bbox").size() == 6)) {
             List<Double> list = new LinkedList<>();
             node.get("bbox").forEach(coor -> list.add(coor.asDouble()));
             return list;
         } else {
-            return null;
+            throw new RuntimeException("bbox is not valid");
         }
     }
 
@@ -62,7 +62,7 @@ public class JsonNodeToAST {
             node.get("interval").forEach(value -> list.add(visit(value)));
             return list;
         } else {
-            return null;
+            throw new RuntimeException("interval is not valid");
         }
     }
 
@@ -77,6 +77,8 @@ public class JsonNodeToAST {
             if (node.has("interval"))
                 return new AstNode(null, "intervalInstance", readInterval(node));
             if (node.has("type") && node.has("coordinates"))
+                return new AstLiteral(LiteralType.Geometry, readGeoJson(node));
+            if (node.has("type") && node.has("geometries"))
                 return new AstLiteral(LiteralType.Geometry, readGeoJson(node));
             if (node.has("bbox"))
                 return new AstLiteral(LiteralType.BBox, readBbox(node));
@@ -106,6 +108,6 @@ public class JsonNodeToAST {
         if (node.isNumber())
             return new AstLiteral(LiteralType.Double, node.asDouble());
 
-        return null;
+        throw new RuntimeException("unsupported type");
     }
 }
