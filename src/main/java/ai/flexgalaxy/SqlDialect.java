@@ -7,3 +7,4 @@ public enum SqlDialect {
     PostgreSQL,
     SQLServer,
 }
+

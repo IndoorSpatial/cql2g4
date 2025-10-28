@@ -30,6 +30,8 @@ dependencies {
 
     antlr "org.antlr:antlr4:4.13.2"
     antlrTool "org.antlr:antlr4:4.13.2"
+
+    implementation 'com.github.jsqlparser:jsqlparser:4.6'
 }
 
 tasks.register('generateCppParser', JavaExec) {

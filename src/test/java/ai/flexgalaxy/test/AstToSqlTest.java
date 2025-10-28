@@ -1,10 +1,15 @@
 package ai.flexgalaxy.test;
 
-import ai.flexgalaxy.AstToSql;
-import ai.flexgalaxy.JsonNodeToAST;
+import ai.flexgalaxy.*;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 import org.junit.jupiter.api.Test;
+import org.locationtech.jts.geom.Geometry;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,10 +18,23 @@ import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
+import net.sf.jsqlparser.statement.Statement;
+
 class AstToSqlTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final String jsonPrefix = "schema/1.0/examples/json/";
     private final String projectRoot = System.getProperty("user.dir");
+
+    public AstToSqlTest() {
+        objectMapper.setDefaultPropertyInclusion(
+                JsonInclude.Include.NON_NULL
+        );
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Geometry.class, new CustomGeometrySerializer());
+        objectMapper.registerModule(module);
+    }
+
 
     void convert() {
         String testName = Thread.currentThread().getStackTrace()[2].getMethodName();
@@ -24,16 +42,26 @@ class AstToSqlTest {
         try {
             String originJsonContent = Files.readString(pathJson, java.nio.charset.StandardCharsets.UTF_8);
             JsonNode node = objectMapper.readTree(originJsonContent);
+            System.out.println(originJsonContent);
+
+            JsonNodeToAST toAst = new JsonNodeToAST();
+            AstNode astNode = toAst.visit(node);
+//            System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(astNode));
 
             AstToSql toSql = new AstToSql();
-            JsonNodeToAST toAst = new JsonNodeToAST();
-            System.out.println(originJsonContent);
-            System.out.println(toSql.visit(toAst.visit(node)));
+            String sqlWhere = toSql.visit(astNode);
+            System.out.println(sqlWhere);
+
+            Statement statement = CCJSqlParserUtil.parse("SELECT * FROM t WHERE " + sqlWhere);
+            PlainSelect select = (PlainSelect)((Select)statement).getSelectBody();
+            PrintAst.printExpression(select.getWhere(), 0);
         } catch (IOException e) {
             fail();
+        } catch (JSQLParserException e) {
+            System.out.println(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
-
 
     // @formatter:off
     @Test public void clause6_01() { convert(); }
