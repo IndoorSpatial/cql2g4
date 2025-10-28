@@ -2,6 +2,7 @@
   "op": "in",
   "args": [
     { "property": "landsat:wrs_path" },
-    [ "153", "154", "15X" ]
-  ]
+    [ "153", "154" ]
+  ],
+  "comment": "We remove the \"15X\" from inList above because database don't support inList with different types"
 }

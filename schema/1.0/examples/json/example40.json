@@ -5,8 +5,9 @@
       "op": "in",
       "args": [
         { "property": "value" },
-        [ "a", "b", "c" ]
-      ]
+        [ 1, 2, 3 ]
+      ],
+      "comment": "We modify \"a\", \"b\", \"c\" to 1, 2, 3 because in some other example the value is integer"
     }
   ]
 }
