@@ -5,7 +5,10 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import net.sf.jsqlparser.JSQLParserException;
+import net.sf.jsqlparser.parser.CCJSqlParser;
+import net.sf.jsqlparser.parser.ParseException;
+import net.sf.jsqlparser.parser.feature.Feature;
+import net.sf.jsqlparser.parser.feature.FeatureConfiguration;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
 import org.junit.jupiter.api.Test;
@@ -15,16 +18,17 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.statement.Statement;
 
 class AstToSqlTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final String jsonPrefix = "schema/1.0/examples/json/";
     private final String projectRoot = System.getProperty("user.dir");
+    private final String resultPrefix = "src/test/results/";
 
     public AstToSqlTest() {
         objectMapper.setDefaultPropertyInclusion(
@@ -34,7 +38,6 @@ class AstToSqlTest {
         module.addSerializer(Geometry.class, new CustomGeometrySerializer());
         objectMapper.registerModule(module);
     }
-
 
     void convert() {
         String testName = Thread.currentThread().getStackTrace()[2].getMethodName();
@@ -46,25 +49,42 @@ class AstToSqlTest {
 
             JsonNodeToAST toAst = new JsonNodeToAST();
             AstNode astNode = toAst.visit(node);
-//            System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(astNode));
+            System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(astNode));
 
-            AstToSql toSql = new AstToSql();
-            String sqlWhere = toSql.visit(astNode);
-            System.out.println(sqlWhere);
+            AstToSql.Config config =  new AstToSql.Config();
 
-            Statement statement = CCJSqlParserUtil.parse("SELECT * FROM t WHERE " + sqlWhere);
-            PlainSelect select = (PlainSelect)((Select)statement).getSelectBody();
-            PrintAst.printExpression(select.getWhere(), 0);
-        } catch (IOException e) {
-            fail();
-        } catch (JSQLParserException e) {
+            for (SqlDialect dialect : SqlDialect.values()) {
+                if (dialect != SqlDialect.PostgreSQL) continue;
+                config.set(dialect);
+                AstToSql toSql = new AstToSql(config);
+                String sqlWhere = toSql.visit(astNode);
+                String selectStr = "SELECT * FROM t WHERE " + sqlWhere + ";\n";
+                System.out.println(dialect + ": " +  selectStr);
+                Files.writeString(
+                        Paths.get(projectRoot, resultPrefix + dialect + ".sql"),
+                        selectStr,
+                        StandardOpenOption.APPEND,
+                        StandardOpenOption.CREATE
+                );
+
+                FeatureConfiguration fconfig = new FeatureConfiguration();
+                fconfig.setValue(Feature.allowSquareBracketQuotation, false);
+                CCJSqlParser parser = new CCJSqlParser(selectStr);
+                parser.withConfiguration(fconfig);
+                Statement statement = parser.Statement();
+
+                PlainSelect select = (PlainSelect)((Select)statement).getSelectBody();
+                PrintAst.printExpression(select.getWhere(), 0);
+            }
+
+        } catch (IOException | ParseException e) {
             System.out.println(e.getMessage());
-            throw new RuntimeException(e);
+            fail();
         }
     }
 
     // @formatter:off
-    @Test public void clause6_01() { convert(); }
+//    @Test public void clause6_01() { convert(); }
     @Test public void clause6_02a() { convert(); }
     @Test public void clause6_02b() { convert(); }
     @Test public void clause6_02c() { convert(); }

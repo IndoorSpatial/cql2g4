@@ -9,6 +9,7 @@ import org.locationtech.jts.io.geojson.GeoJsonReader;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 public class JsonNodeToAST {
     private final Op2Type op2Type = new Op2Type();
@@ -16,10 +17,14 @@ public class JsonNodeToAST {
     private final GeoJsonReader reader = new GeoJsonReader();
 
     public AstNode visit(JsonNode node) {
+        return visit(node, null);
+    }
+
+    public AstNode visit(JsonNode node, String upperOp) {
         if (node.isObject()) {
             if (node.has("op") && node.has("args") && node.get("args").isArray()) {
                 List<AstNode> list = new LinkedList<>();
-                node.get("args").forEach(arg -> list.add(visit(arg)));
+                node.get("args").forEach(arg -> list.add(visit(arg, node.get("op").asText())));
                 return new AstNode(node.get("op").asText(), op2Type.type(node.get("op").asText()), list);
             }
             if (node.has("interval"))
@@ -40,7 +45,11 @@ public class JsonNodeToAST {
         if (node.isArray()) {
             List<AstNode> list = new LinkedList<>();
             node.forEach(item -> list.add(visit(item)));
-            return new AstNode(null, "arrayExpression", list);
+            if (Objects.equals(upperOp, "in")) {
+                return new AstNode(null, "inListOperands", list);
+            } else {
+                return new AstNode(null, "arrayExpression", list);
+            }
         }
 
         if (node.isTextual())
