@@ -9,12 +9,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public class AstToSql {
-    public static class Config {
-        SqlDialect dialect = SqlDialect.PostgreSQL;
-        ArrayType arrayType = ArrayType.BuiltIn;
-        public void set(SqlDialect dialect) { this.dialect = dialect; }
-        public void set(ArrayType arrayType) { this.arrayType = arrayType; }
-    }
 
     private final HashMap<String, BiFunction<AstNode, String, String>> typedConverters = new HashMap<>();
 
@@ -49,10 +43,6 @@ public class AstToSql {
     Function<AstNode, String> array = (node) -> arrayS.apply(node, "()");
 
     public AstToSql() {
-        this(new Config());
-    }
-
-    public AstToSql(Config config) {
         typedConverters.put("andOrExpression", (node, pt) -> binaryInfixOperator.apply(node));
         typedConverters.put("notExpression", (node, pt) -> unaryPrefixOperator.apply(node));
         typedConverters.put("binaryComparisonPredicate", (node, pt) -> binaryInfixOperator.apply(node));
@@ -87,60 +77,57 @@ public class AstToSql {
             return switch (node.getOp()) {
                 case "t_equals" -> lhs + " = " + rhs;  // point-point, point-interval
 
-                case "t_after"  -> lhs + " >> " + rhs;  // point, point-interval
-                case "t_before"  -> lhs + " << " + rhs;  // point, point-interval
-                case "t_contains"  -> lhs + " @> " + rhs;
-                case "t_during"  -> lhs + " <@ " + rhs;
-                case "t_intersects"  -> lhs + " && " + rhs;  // point, point-interval
-                case "t_disjoint"  -> "NOT (" + lhs + " && " + rhs + ")";  // point, point-interval
+                case "t_after" -> lhs + " >> " + rhs;  // point, point-interval
+                case "t_before" -> lhs + " << " + rhs;  // point, point-interval
+                case "t_contains" -> lhs + " @> " + rhs;
+                case "t_during" -> lhs + " <@ " + rhs;
+                case "t_intersects" -> lhs + " && " + rhs;  // point, point-interval
+                case "t_disjoint" -> "NOT (" + lhs + " && " + rhs + ")";  // point, point-interval
 
-                case "t_starts" -> "LOWER(" + lhs + ") = LOWER(" + rhs + ") AND UPPER(" + lhs + ") < UPPER(" + rhs + ")";
-                case "t_startedBy" -> "LOWER(" + lhs + ") = LOWER(" + rhs + ") AND UPPER(" + lhs + ") > UPPER(" + rhs + ")";
+                case "t_starts" ->
+                        "LOWER(" + lhs + ") = LOWER(" + rhs + ") AND UPPER(" + lhs + ") < UPPER(" + rhs + ")";
+                case "t_startedBy" ->
+                        "LOWER(" + lhs + ") = LOWER(" + rhs + ") AND UPPER(" + lhs + ") > UPPER(" + rhs + ")";
 
-                case "t_finishes" -> "UPPER(" + lhs + ") = UPPER(" + rhs + ") AND LOWER(" + lhs + ") < LOWER(" + rhs + ")";
-                case "t_finishedBy" -> "UPPER(" + lhs + ") = UPPER(" + rhs + ") AND LOWER(" + lhs + ") > LOWER(" + rhs + ")";
+                case "t_finishes" ->
+                        "UPPER(" + lhs + ") = UPPER(" + rhs + ") AND LOWER(" + lhs + ") < LOWER(" + rhs + ")";
+                case "t_finishedBy" ->
+                        "UPPER(" + lhs + ") = UPPER(" + rhs + ") AND LOWER(" + lhs + ") > LOWER(" + rhs + ")";
 
                 case "t_meets" -> "UPPER(" + lhs + ") = LOWER(" + rhs + ")";
                 case "t_metBy" -> "LOWER(" + lhs + ") = UPPER(" + rhs + ")";
 
-                case "t_overlaps"  -> lhs + " && " + rhs + " AND LOWER(" + lhs + ") < LOWER(" + rhs + ") AND UPPER(" + lhs + ") < UPPER(" + rhs + ")";
-                case "t_overlappedBy"  -> lhs + " && " + rhs + " AND LOWER(" + lhs + ") > LOWER(" + rhs + ") AND UPPER(" + lhs + ") > UPPER(" + rhs + ")";
+                case "t_overlaps" ->
+                        lhs + " && " + rhs + " AND LOWER(" + lhs + ") < LOWER(" + rhs + ") AND UPPER(" + lhs + ") < UPPER(" + rhs + ")";
+                case "t_overlappedBy" ->
+                        lhs + " && " + rhs + " AND LOWER(" + lhs + ") > LOWER(" + rhs + ") AND UPPER(" + lhs + ") > UPPER(" + rhs + ")";
 
                 default -> throw new IllegalStateException("Unexpected temporal operator: " + node.getOp());
             };
 
         });
-        typedConverters.put("arrayPredicate", (node, pt) -> {
-            if (config.arrayType == ArrayType.BuiltIn) {
-                if (node.getOp().equals("a_overlaps"))
-                    return visit(node.getArgs().getFirst()) + " && " + visit(node.getArgs().getLast());
-                if (node.getOp().equals("a_contains"))
-                    return visit(node.getArgs().getFirst()) + " @> " + visit(node.getArgs().getLast());
-                if (node.getOp().equals("a_containedBy"))
-                    return visit(node.getArgs().getFirst()) + " <@ " + visit(node.getArgs().getLast());
-                if (node.getOp().equals("a_equals")) {
+        typedConverters.put("arrayPredicate", (node, pt) ->
+            switch (node.getOp()) {
+                case "a_overlaps" ->
+                    visit(node.getArgs().getFirst()) + " && " + visit(node.getArgs().getLast());
+                case "a_contains" ->
+                    visit(node.getArgs().getFirst()) + " @> " + visit(node.getArgs().getLast());
+                case "a_containedBy" ->
+                    visit(node.getArgs().getFirst()) + " <@ " + visit(node.getArgs().getLast());
+                case "a_equals" -> {
                     String left = visit(node.getArgs().getFirst());
                     String right = visit(node.getArgs().getLast());
-                    return "(" + left + " @> " + right + ") AND (" + left + " <@ " + right + ")";
+                    yield "(" + left + " @> " + right + ") AND (" + left + " <@ " + right + ")";
                 }
-                throw new RuntimeException("unknow array operator " + node.getOp());
-            } else {
-                throw new RuntimeException("Unsupported array type");
-            }
-        });
+                default -> throw new RuntimeException("unknow array operator " + node.getOp());
+            });
         typedConverters.put("functionRef", (node, pt) -> function.apply(node, op -> op));
         typedConverters.put("Property", (node, pt) -> {
             String property_name = (String) ((AstLiteral) node).getValue();
-            return switch (config.dialect) {
-                case SQLite -> "\"" + property_name + "\"";
-                case MySQL -> "`" + property_name + "`";
-                case Oracle -> "\"" + property_name + "\"";
-                case PostgreSQL -> "\"" + property_name + "\"";
-                case SQLServer -> "[" + property_name + "]";
-            };
+            return "\"" + property_name + "\"";
         });
         typedConverters.put("String", (node, pt) -> {
-            String value = (String)((AstLiteral) node).getValue();
+            String value = (String) ((AstLiteral) node).getValue();
             if (Objects.equals(pt, "intervalInstance") && Objects.equals(value, ".."))
                 return "NULL";
             else
@@ -150,36 +137,13 @@ public class AstToSql {
         typedConverters.put("Integer", (node, pt) -> Integer.toString((int) ((AstLiteral) node).getValue()));
         typedConverters.put("Boolean", (node, pt) -> {
             boolean b = (boolean) ((AstLiteral) node).getValue();
-            return switch (config.dialect) {
-                case SQLite -> b ? "TRUE" : "FALSE";
-                case MySQL -> b ? "TRUE" : "FALSE";
-                case Oracle -> b ? "1" : "0";
-                case PostgreSQL -> b ? "TRUE" : "FALSE";
-                case SQLServer -> b ? "1" : "0";
-            };
+            return b ? "TRUE" : "FALSE";
         });
         typedConverters.put("Date", (node, pt) -> {
             String date = (String) ((AstLiteral) node).getValue();
-            return switch (config.dialect) {
-                case SQLite -> "DATE(" + date + ")";
-                case MySQL -> "DATE '" + date + "'";
-                case Oracle -> "DATE '" + date + "'";
-                case PostgreSQL -> "DATE '" + date + "'";
-                case SQLServer -> "CAST('" + date + "' AS DATE)";
-            };
+            return "DATE '" + date + "'";
         });
-        typedConverters.put("arrayExpression", (node, pt) -> {
-            if (config.dialect == SqlDialect.PostgreSQL) {
-                if (config.arrayType == ArrayType.BuiltIn)
-                    return "ARRAY " + arrayS.apply(node, "[]");
-                else if (config.arrayType == ArrayType.Json)
-                    throw new RuntimeException("unimplemented array type");
-                else
-                    throw new RuntimeException("Unsupported array type:  " + config.arrayType);
-            } else {
-                throw new RuntimeException("Unsupported array type in dialect: " + config.dialect);
-            }
-        });
+        typedConverters.put("arrayExpression", (node, pt) -> "ARRAY " + arrayS.apply(node, "[]"));
         typedConverters.put("inListOperands", (node, pt) -> array.apply(node));
         typedConverters.put("Geometry", (node, pt) -> {
             Geometry geom = (Geometry) ((AstLiteral) node).getValue();
@@ -194,7 +158,8 @@ public class AstToSql {
 
         typedConverters.put("Timestamp", (node, pt) -> "'" + ((AstLiteral) node).getValue() + "'");
         typedConverters.put("BBox", (node, pt) -> {
-            List<Double> bbox = (List<Double>) ((AstLiteral) node).getValue();
+            Object obj = ((AstLiteral) node).getValue();
+            List<Double> bbox = (List<Double>)obj;
             double minx = bbox.get(0);
             double miny = bbox.get(1);
             double maxx = bbox.get(2);
@@ -212,6 +177,7 @@ public class AstToSql {
     public String visit(AstNode node) {
         return visit(node, null);
     }
+
     public String visit(AstNode node, String parentType) {
         if (typedConverters.containsKey(node.getType()))
             return typedConverters.get(node.getType()).apply(node, parentType);

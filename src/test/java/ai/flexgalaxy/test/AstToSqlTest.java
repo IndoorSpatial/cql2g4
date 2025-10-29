@@ -51,12 +51,10 @@ class AstToSqlTest {
             AstNode astNode = toAst.visit(node);
             System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(astNode));
 
-            AstToSql.Config config =  new AstToSql.Config();
 
             for (SqlDialect dialect : SqlDialect.values()) {
                 if (dialect != SqlDialect.PostgreSQL) continue;
-                config.set(dialect);
-                AstToSql toSql = new AstToSql(config);
+                AstToSql toSql = new AstToSql();
                 String sqlWhere = toSql.visit(astNode);
                 String selectStr = "SELECT * FROM t WHERE " + sqlWhere + ";";
                 System.out.println(dialect + ": " +  selectStr);
