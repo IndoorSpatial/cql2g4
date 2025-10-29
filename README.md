@@ -74,6 +74,7 @@ It will be parsed by jackson to obtain JsonNodes in memory.
 
 ## Parse tree
 The ANTLR4 generated code will parse the text format of expression into parse tree which looks like:
+
 ![parse_tree.png](doc/parse_tree.png)
 
 ## AST (Abstract Syntax Tree)
@@ -119,22 +120,22 @@ The only currently supported SQL dialect is PostgreSQL, as it offers excellent s
 We will support other mainstream SQL dialects in the future.
 
 ## Examples
-| CQL2                                                                                             | SQL WHERE clause                                                                                                     |
-|--------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
-| wind_speed > 2 * 3 + 4                                                                           | "wind_speed" > 2 * 3 + 4                                                                                             |
-| city='Shenzhen'                                                                                  | "city" = 'Shenzhen'                                                                                                  |
-| value=field^2                                                                                    | "value" = POWER("field", 2)                                                                                          |
-| value IN (1.0, 2.0, 3.0)                                                                         | "value" IN (1.0, 2.0, 3.0)                                                                                           |
-| owner NOT LIKE '%Mike%'                                                                          | NOT ("owner" LIKE '%Mike%')                                                                                          |
-| value IS NULL OR value BETWEEN 10 AND 20                                                         | "value" IS NULL OR "value" BETWEEN 10 AND 20                                                                         |
-| A_CONTAINS(layer:ids, ('layers-ca','layers-us'))                                                 | "layer:ids" @> ARRAY ['layers-ca', 'layers-us']                                                                      |
-| S_INTERSECTS(geom,POINT(36.3 32.2))                                                              | ST_INTERSECTS("geom", ST_GeomFromText('POINT (36.3 32.2)'))                                                          |
-| S_WITHIN(location,BBOX(-118,33.8,-117.9,34))                                                     | ST_WITHIN("location", ST_GeomFromText('POLYGON((-118.0 33.8, -117.9 33.8, -117.9 34.0, -118.0 34.0, -118.0 33.8))')) |
-| T_DURING(INTERVAL(starts_at, ends_at), INTERVAL('1990-08-09T23:30:00Z', '2025-10-29T17:39:00Z')) | TSRANGE("starts_at", "ends_at", '[]') <@ TSRANGE('1990-08-09T23:30:00Z', '2025-10-29T17:39:00Z', '[]')               |
-| T_BEFORE(built, DATE('2015-01-01'))                                                              | TSRANGE("built", "built", '[]') << TSRANGE(DATE '2015-01-01', DATE '2015-01-01', '[]')                               |
-| ACCENTI(etat_vol) = ACCENTI('débárquér')                                                         | UNACCENT("etat_vol") = UNACCENT('débárquér')                                                                         |
-| CASEI(road_class) IN (CASEI('Οδος'),CASEI('Straße'))                                             | LOWER(road_class) IN (LOWER('Οδος'),LOWER('Straße'))                                                                 |
-| my_function(windSpeed) < 4                                                                       | my_function("windSpeed") < 4                                                                                         |
+| CQL2                                                                                             | SQL WHERE clause (PostgreSQL dialect)                                                                                                             |
+|--------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------|
+| wind_speed > 2 * 3 + 4                                                                           | "wind_speed" > 2 * 3 + 4                                                                                                                          |
+| city='Shenzhen'                                                                                  | "city" = 'Shenzhen'                                                                                                                               |
+| value=field^2                                                                                    | "value" = POWER("field", 2)                                                                                                                       |
+| value IN (1.0, 2.0, 3.0)                                                                         | "value" IN (1.0, 2.0, 3.0)                                                                                                                        |
+| owner NOT LIKE '%Mike%'                                                                          | NOT ("owner" LIKE '%Mike%')                                                                                                                       |
+| value IS NULL OR value BETWEEN 10 AND 20                                                         | "value" IS NULL OR "value" BETWEEN 10 AND 20                                                                                                      |
+| A_CONTAINS(layer:ids, ('layers-ca','layers-us'))                                                 | "layer:ids" @> ARRAY ['layers-ca', 'layers-us']                                                                                                   |
+| S_INTERSECTS(geom,POINT(36.3 32.2))                                                              | ST_INTERSECTS("geom", ST_GeomFromText('POINT (36.3 32.2)')) --(extension postgis needed)                                                          |
+| S_WITHIN(location,BBOX(-118,33.8,-117.9,34))                                                     | ST_WITHIN("location", ST_GeomFromText('POLYGON((-118.0 33.8, -117.9 33.8, -117.9 34.0, -118.0 34.0, -118.0 33.8))')) --(extension postgis needed) |
+| T_DURING(INTERVAL(starts_at, ends_at), INTERVAL('1990-08-09T23:30:00Z', '2025-10-29T17:39:00Z')) | TSRANGE("starts_at", "ends_at", '[]') <@ TSRANGE('1990-08-09T23:30:00Z', '2025-10-29T17:39:00Z', '[]')                                            |
+| T_BEFORE(built, DATE('2015-01-01'))                                                              | TSRANGE("built", "built", '[]') << TSRANGE(DATE '2015-01-01', DATE '2015-01-01', '[]')                                                            |
+| ACCENTI(etat_vol) = ACCENTI('débárquér')                                                         | UNACCENT("etat_vol") = UNACCENT('débárquér') --(extension unaccent needed)                                                                        |
+| CASEI(road_class) IN (CASEI('Οδος'),CASEI('Straße'))                                             | LOWER(road_class) IN (LOWER('Οδος'),LOWER('Straße'))                                                                                              |
+| my_function(windSpeed) < 4                                                                       | my_function("windSpeed") < 4 --(user defined function needed)                                                                                     |
 
 # History
 Syrius Robotics has been focused on developing applications for indoor robots, which led us to create an indoor geographic information system.
