@@ -1,1 +1,1 @@
-NOT "value" IN ('a', 'b', 'c')
+NOT "value" IN (1, 2, 3)
