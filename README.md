@@ -112,6 +112,30 @@ The type information may help converters to do the conversion recursively.
 The SqlConverter will generate the where clause according to AST format, without the "SELECT" part and the word "WHERE".
 
 
+# SQL
+
+## Dialect
+The only currently supported SQL dialect is PostgreSQL, as it offers excellent support for intervals, arrays, and spatial data simultaneously.
+We will support other mainstream SQL dialects in the future.
+
+## Examples
+| CQL2                                                                                             | SQL WHERE clause                                                                                                     |
+|--------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+| wind_speed > 2 * 3 + 4                                                                           | "wind_speed" > 2 * 3 + 4                                                                                             |
+| city='Shenzhen'                                                                                  | "city" = 'Shenzhen'                                                                                                  |
+| value=field^2                                                                                    | "value" = POWER("field", 2)                                                                                          |
+| value IN (1.0, 2.0, 3.0)                                                                         | "value" IN (1.0, 2.0, 3.0)                                                                                           |
+| owner NOT LIKE '%Mike%'                                                                          | NOT ("owner" LIKE '%Mike%')                                                                                          |
+| value IS NULL OR value BETWEEN 10 AND 20                                                         | "value" IS NULL OR "value" BETWEEN 10 AND 20                                                                         |
+| A_CONTAINS(layer:ids, ('layers-ca','layers-us'))                                                 | "layer:ids" @> ARRAY ['layers-ca', 'layers-us']                                                                      |
+| S_INTERSECTS(geom,POINT(36.3 32.2))                                                              | ST_INTERSECTS("geom", ST_GeomFromText('POINT (36.3 32.2)'))                                                          |
+| S_WITHIN(location,BBOX(-118,33.8,-117.9,34))                                                     | ST_WITHIN("location", ST_GeomFromText('POLYGON((-118.0 33.8, -117.9 33.8, -117.9 34.0, -118.0 34.0, -118.0 33.8))')) |
+| T_DURING(INTERVAL(starts_at, ends_at), INTERVAL('1990-08-09T23:30:00Z', '2025-10-29T17:39:00Z')) | TSRANGE("starts_at", "ends_at", '[]') <@ TSRANGE('1990-08-09T23:30:00Z', '2025-10-29T17:39:00Z', '[]')               |
+| T_BEFORE(built, DATE('2015-01-01'))                                                              | TSRANGE("built", "built", '[]') << TSRANGE(DATE '2015-01-01', DATE '2015-01-01', '[]')                               |
+| ACCENTI(etat_vol) = ACCENTI('débárquér')                                                         | UNACCENT("etat_vol") = UNACCENT('débárquér')                                                                         |
+| CASEI(road_class) IN (CASEI('Οδος'),CASEI('Straße'))                                             | LOWER(road_class) IN (LOWER('Οδος'),LOWER('Straße'))                                                                 |
+| my_function(windSpeed) < 4                                                                       | my_function("windSpeed") < 4                                                                                         |
+
 # History
 Syrius Robotics has been focused on developing applications for indoor robots, which led us to create an indoor geographic information system.
 At the end of 2024, while working on this system, we recognized the need for a filter language to help robots query indoor features more efficiently.
