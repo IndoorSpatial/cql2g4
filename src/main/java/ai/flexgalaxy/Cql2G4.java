@@ -19,15 +19,8 @@ public class Cql2G4 {
     }
 
     public static String textToSql(String cqlText, SqlDialect sqlDialect) {
-        // text -> parse tree
-        Cql2Lexer lexer = new Cql2Lexer(CharStreams.fromString(cqlText));
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        Cql2Parser parser = new Cql2Parser(tokens);
-        ParseTree tree = parser.booleanExpression();
-
-        // parse tree -> json node
-        JsonConverterVisitor visitor = new JsonConverterVisitor(tokens);
-        JsonNode jsonNode = visitor.visit(tree);
+        // text -> json node
+        JsonNode jsonNode = textToJsonNode(cqlText);
 
         // json node -> sql
         return jsonNodeToSql(jsonNode, sqlDialect);
@@ -50,5 +43,25 @@ public class Cql2G4 {
 
         // json node -> sql
         return jsonNodeToSql(jsonNode, sqlDialect);
+    }
+
+    public static JsonNode textToJsonNode(String cqlText) {
+        // text -> parse tree
+        Cql2Lexer lexer = new Cql2Lexer(CharStreams.fromString(cqlText));
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        Cql2Parser parser = new Cql2Parser(tokens);
+        ParseTree tree = parser.booleanExpression();
+
+        // parse tree -> json node
+        JsonConverterVisitor visitor = new JsonConverterVisitor(tokens);
+        return visitor.visit(tree);
+    }
+
+    public static String textToJsonString(String cqlText) throws JsonProcessingException {
+        // text -> json node
+        JsonNode jsonNode = textToJsonNode(cqlText);
+
+        // json node -> json string
+        return objectMapper.writeValueAsString(jsonNode);
     }
 }

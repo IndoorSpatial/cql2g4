@@ -11,23 +11,9 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 public class Main {
     public static void main(String[] args) throws JsonProcessingException {
-        Cql2Lexer lexer = new Cql2Lexer(CharStreams.fromString("""
-                S_CROSSES(road,POLYGON((43.7286 -79.2986, 43.7311 -79.2996, 43.7323 -79.2972,
-                                        43.7326 -79.2971, 43.7350 -79.2981, 43.7350 -79.2982,
-                                        43.7352 -79.2982, 43.7357 -79.2956, 43.7337 -79.2948,
-                                        43.7343 -79.2933, 43.7339 -79.2923, 43.7327 -79.2947,
-                                        43.7320 -79.2942, 43.7322 -79.2937, 43.7306 -79.2930,
-                                        43.7303 -79.2930, 43.7299 -79.2928, 43.7286 -79.2986)))
-                """));
-        CommonTokenStream tokens = new CommonTokenStream(lexer);
-        Cql2Parser parser = new Cql2Parser(tokens);
-        ParseTree tree = parser.booleanExpression();
-
-        JsonConverterVisitor visitor = new JsonConverterVisitor(tokens);
-        JsonNode convertJsonResult = visitor.visit(tree);
-
-        System.out.println(tree.toStringTree(parser));
-        ObjectMapper objectMapper = new ObjectMapper();
-        System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(convertJsonResult));
+        String cqlText = "speed > 3 AND S_CONTAINS(POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0)), location)";
+        System.out.println(cqlText);
+        System.out.println(Cql2G4.textToJsonString(cqlText));
+        System.out.println(Cql2G4.textToSql(cqlText));
     }
 }
