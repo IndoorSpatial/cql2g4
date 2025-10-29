@@ -28,7 +28,7 @@ public class AstToJsonNode {
             return obj;
         }
 
-        if (node.getType().equals("arrayExpression")) {
+        if (node.getType().equals("arrayExpression") || node.getType().equals("inListOperands")) {
             ArrayNode arr = objectMapper.createArrayNode();
             node.getArgs().forEach((arg) -> arr.add(visit(arg)));
             return arr;

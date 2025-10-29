@@ -45,11 +45,10 @@ public class JsonNodeToAST {
         if (node.isArray()) {
             List<AstNode> list = new LinkedList<>();
             node.forEach(item -> list.add(visit(item)));
-            if (Objects.equals(upperOp, "in")) {
+            if (Objects.equals(upperOp, "in"))
                 return new AstNode(null, "inListOperands", list);
-            } else {
+            else
                 return new AstNode(null, "arrayExpression", list);
-            }
         }
 
         if (node.isTextual())

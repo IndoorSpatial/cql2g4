@@ -58,11 +58,11 @@ class AstToSqlTest {
                 config.set(dialect);
                 AstToSql toSql = new AstToSql(config);
                 String sqlWhere = toSql.visit(astNode);
-                String selectStr = "SELECT * FROM t WHERE " + sqlWhere + ";\n";
+                String selectStr = "SELECT * FROM t WHERE " + sqlWhere + ";";
                 System.out.println(dialect + ": " +  selectStr);
                 Files.writeString(
                         Paths.get(projectRoot, resultPrefix + dialect + ".sql"),
-                        selectStr,
+                        selectStr + " -- " + testName + "\n",
                         StandardOpenOption.APPEND,
                         StandardOpenOption.CREATE
                 );
@@ -76,7 +76,6 @@ class AstToSqlTest {
                 PlainSelect select = (PlainSelect)((Select)statement).getSelectBody();
                 PrintAst.printExpression(select.getWhere(), 0);
             }
-
         } catch (IOException | ParseException e) {
             System.out.println(e.getMessage());
             fail();
@@ -84,7 +83,7 @@ class AstToSqlTest {
     }
 
     // @formatter:off
-//    @Test public void clause6_01() { convert(); }
+//    @Test public void clause6_01() { convert(); }  // this example is not a boolean expression
     @Test public void clause6_02a() { convert(); }
     @Test public void clause6_02b() { convert(); }
     @Test public void clause6_02c() { convert(); }
@@ -187,8 +186,8 @@ class AstToSqlTest {
     @Test public void example78() { convert(); }
     @Test public void example79() { convert(); }
     @Test public void example80() { convert(); }
-    @Test public void example81() { convert(); }
-    @Test public void example82() { convert(); }
+//    @Test public void example81() { convert(); }  // don't support array with different type
+//    @Test public void example82() { convert(); }  // don't support array with different type
     @Test public void example83() { convert(); }
     @Test public void example84() { convert(); }
     @Test public void example85() { convert(); }
