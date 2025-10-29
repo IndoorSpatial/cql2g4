@@ -9,33 +9,108 @@ https://docs.ogc.org/is/21-065r2/21-065r2.html
 ```java
 import ai.flexgalaxy.Cql2G4;
 
-String cqlText = "speed > 3 AND S_CONTAINS(POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0)), location)";
-System.out.println(cqlText);
-System.out.println(Cql2G4.textToJsonString(cqlText));
-/*
+import com.fasterxml.jackson.core.JsonProcessingException;
+
+public class Main {
+    public static void main(String[] args) throws JsonProcessingException {
+        String cqlText = "speed > 3 AND S_CONTAINS(POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0)), location)";
+        System.out.println(cqlText);
+        System.out.println(Cql2G4.textToJsonString(cqlText));
+        /*
+        {
+          "op" : "and",
+          "args" : [ {
+            "op" : ">",
+            "args" : [ {
+              "property" : "speed"
+            }, 3 ]
+          }, {
+            "op" : "s_contains",
+            "args" : [ {
+              "type" : "Polygon",
+              "coordinates" : [ [ [ 0.0, 0.0 ], [ 1, 0.0 ], [ 1, 1 ], [ 0.0, 1 ], [ 0.0, 0.0 ] ] ]
+            }, {
+              "property" : "location"
+            } ]
+          } ]
+        }
+        */
+        System.out.println(Cql2G4.textToSql(cqlText));
+        /*
+          "speed" > 3 AND ST_CONTAINS(ST_GeomFromText('POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))'), "location")
+        */
+    }
+}
+```
+
+# Expression format
+![cql2g4_progress_20251029.png](doc/cql2g4_progress_20251029.png)
+There are 6 related expression format in cql2g4.
+
+## Text
+This is text format defined in the cql2 standard
+```text
+balance-150.0 > 0
+```
+
+## Json string and in-memory JsonNode
+This is json format defined in the cql2 standard
+```json
 {
-  "op" : "and",
+  "op": ">",
+  "args": [
+    {
+      "op": "-",
+      "args": [
+        { "property": "balance" },
+        150.0
+      ]
+    },
+    0
+  ]
+}
+```
+It will be parsed by jackson to obtain JsonNodes in memory.
+
+## Parse tree
+The ANTLR4 generated code will parse the text format of expression into parse tree which looks like:
+![parse_tree.png](doc/parse_tree.png)
+
+## AST (Abstract Syntax Tree)
+Both text and json format will be converted to AST.
+```json
+{
+  "op" : ">",
+  "type" : "binaryComparisonPredicate",
   "args" : [ {
-    "op" : ">",
+    "op" : "-",
+    "type" : "arithmeticExpression",
     "args" : [ {
-      "property" : "speed"
-    }, 3 ]
-  }, {
-    "op" : "s_contains",
-    "args" : [ {
-      "type" : "Polygon",
-      "coordinates" : [ [ [ 0.0, 0.0 ], [ 1, 0.0 ], [ 1, 1 ], [ 0.0, 1 ], [ 0.0, 0.0 ] ] ]
+      "type" : "Property",
+      "value" : "balance",
+      "literalType" : "Property"
     }, {
-      "property" : "location"
+      "type" : "Double",
+      "value" : 150.0,
+      "literalType" : "Double"
     } ]
+  }, {
+    "type" : "Integer",
+    "value" : 0,
+    "literalType" : "Integer"
   } ]
 }
-*/
-System.out.println(Cql2G4.textToSql(cqlText));
-/*
-  "speed" > 3 AND ST_CONTAINS(ST_GeomFromText('POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))'), "location")
-*/
 ```
+It looks like json format but contains extra type information for example "arithmeticExpression", "Property".
+The type information may help converters to do the conversion recursively.
+
+## SQL
+```sql
+-- SELECT * FROM t WHERE
+"balance" - 150.0 > 0;
+```
+The SqlConverter will generate the where clause according to AST format, without the "SELECT" part and the word "WHERE".
+
 
 # History
 Syrius Robotics has been focused on developing applications for indoor robots, which led us to create an indoor geographic information system.
