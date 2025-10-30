@@ -64,7 +64,7 @@ public class JsonNodeToAST {
         if (node.isNumber())
             return new AstLiteral(LiteralType.Double, node.asDouble());
 
-        throw new RuntimeException("unsupported type");
+        throw new RuntimeException("unsupported type: " + node.getNodeType());
     }
 
     private Geometry readGeoJson(JsonNode node) {

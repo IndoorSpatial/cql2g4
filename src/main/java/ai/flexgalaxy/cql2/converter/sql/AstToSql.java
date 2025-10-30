@@ -1,4 +1,4 @@
-package ai.flexgalaxy.cql2.converter;
+package ai.flexgalaxy.cql2.converter.sql;
 
 import ai.flexgalaxy.cql2.ast.AstLiteral;
 import ai.flexgalaxy.cql2.ast.AstNode;
@@ -43,8 +43,14 @@ public class AstToSql {
         return sb.toString();
     };
     final Function<AstNode, String> array = (node) -> arrayS.apply(node, "()");
+    private final Function<String, String> propertyToQueryable;
 
     public AstToSql() {
+        this(null);
+    }
+
+    public AstToSql(Function<String, String> propertyToQueryable) {
+        this.propertyToQueryable = propertyToQueryable;
         typedConverters.put("andOrExpression", (node, pt) -> binaryInfixOperator.apply(node));
         typedConverters.put("notExpression", (node, pt) -> unaryPrefixOperator.apply(node));
         typedConverters.put("binaryComparisonPredicate", (node, pt) -> binaryInfixOperator.apply(node));
@@ -126,7 +132,10 @@ public class AstToSql {
         typedConverters.put("functionRef", (node, pt) -> function.apply(node, op -> op));
         typedConverters.put("Property", (node, pt) -> {
             String property_name = (String) ((AstLiteral) node).getValue();
-            return "\"" + property_name + "\"";
+            if (propertyToQueryable == null)
+                return "\"" + property_name + "\"";
+            else
+                return propertyToQueryable.apply(property_name);
         });
         typedConverters.put("String", (node, pt) -> {
             String value = (String) ((AstLiteral) node).getValue();

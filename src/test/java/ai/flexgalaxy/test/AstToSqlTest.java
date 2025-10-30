@@ -2,7 +2,7 @@ package ai.flexgalaxy.test;
 
 import ai.flexgalaxy.cql2.*;
 import ai.flexgalaxy.cql2.ast.AstNode;
-import ai.flexgalaxy.cql2.converter.AstToSql;
+import ai.flexgalaxy.cql2.converter.sql.AstToSql;
 import ai.flexgalaxy.cql2.converter.CustomGeometrySerializer;
 import ai.flexgalaxy.cql2.converter.JsonNodeToAST;
 import com.fasterxml.jackson.annotation.JsonInclude;
