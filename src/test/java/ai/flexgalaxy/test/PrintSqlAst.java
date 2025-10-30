@@ -1,12 +1,9 @@
-package ai.flexgalaxy;
+package ai.flexgalaxy.test;
 
-import net.sf.jsqlparser.statement.*;
 import net.sf.jsqlparser.statement.select.*;
-import net.sf.jsqlparser.parser.*;
 import net.sf.jsqlparser.expression.*;
-import net.sf.jsqlparser.util.deparser.*;
 
-public class PrintAst {
+public class PrintSqlAst {
     static public void printSelect(PlainSelect select, int indent) {
         String pad = "  ".repeat(indent);
         System.out.println(pad + "SELECT");

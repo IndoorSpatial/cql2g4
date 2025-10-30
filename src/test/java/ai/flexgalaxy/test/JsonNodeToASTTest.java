@@ -1,6 +1,9 @@
 package ai.flexgalaxy.test;
 
-import ai.flexgalaxy.*;
+import ai.flexgalaxy.cql2.ast.AstNode;
+import ai.flexgalaxy.cql2.converter.AstToJsonNode;
+import ai.flexgalaxy.cql2.converter.CustomGeometrySerializer;
+import ai.flexgalaxy.cql2.converter.JsonNodeToAST;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,8 +23,8 @@ class JsonNodeToASTTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final String jsonPrefix = "schema/1.0/examples/json/";
     private final String projectRoot = System.getProperty("user.dir");
-    JsonNodeToAST toAst = new JsonNodeToAST();
-    AstToJsonNode toJson = new AstToJsonNode();
+    final JsonNodeToAST toAst = new JsonNodeToAST();
+    final AstToJsonNode toJson = new AstToJsonNode();
 
     public JsonNodeToASTTest() {
         objectMapper.setDefaultPropertyInclusion(
@@ -41,8 +44,8 @@ class JsonNodeToASTTest {
             JsonNode originJson = objectMapper.readTree(originJsonContent);
             System.out.println(objectMapper.writeValueAsString(originJson));
 
-            AstNode astNode = toAst.visit(originJson);
-            JsonNode convertedJson = toJson.visit(astNode);
+            AstNode astNode = toAst.convert(originJson);
+            JsonNode convertedJson = toJson.convert(astNode);
             System.out.println(objectMapper.writeValueAsString(convertedJson));
 
             assertTrue(originJson.equals((lhs, rhs) -> {

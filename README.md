@@ -7,7 +7,7 @@ https://docs.ogc.org/is/21-065r2/21-065r2.html
 
 # Examples
 ```java
-import ai.flexgalaxy.Cql2G4;
+import ai.flexgalaxy.cql2.Cql2G4;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 

@@ -1,4 +1,4 @@
-package ai.flexgalaxy;
+package ai.flexgalaxy.cql2.ast;
 
 import java.util.List;
 
@@ -18,5 +18,5 @@ public class AstNode {
         this.args = args;
     }
 
-    boolean isLiteral() { return false; }
+    public boolean isLiteral() { return false; }
 }

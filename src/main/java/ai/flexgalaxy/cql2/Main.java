@@ -1,4 +1,4 @@
-package ai.flexgalaxy;
+package ai.flexgalaxy.cql2;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 

@@ -1,4 +1,4 @@
-package ai.flexgalaxy;
+package ai.flexgalaxy.cql2.converter;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -23,7 +23,7 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
 
-public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<JsonNode> {
+public class ParseTreeToJsonNode extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<JsonNode> {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final GeoJsonWriter writer = new GeoJsonWriter();
     private final WKTReader reader = new WKTReader();
@@ -34,7 +34,7 @@ public class JsonConverterVisitor extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVis
             .appendLiteral("Z")
             .toFormatter(Locale.ROOT);
 
-    public JsonConverterVisitor(CommonTokenStream tokens) {
+    public ParseTreeToJsonNode(CommonTokenStream tokens) {
         this.tokens = tokens;
         writer.setEncodeCRS(false);
     }

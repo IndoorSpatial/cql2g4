@@ -1,0 +1,3 @@
+A_CONTAINS(related_shelf_ids, ['binlocation-cell-id'])
+AND
+A_CONTAINS(label, ['PICKING'])

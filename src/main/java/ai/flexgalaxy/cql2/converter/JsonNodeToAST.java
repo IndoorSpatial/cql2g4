@@ -1,5 +1,9 @@
-package ai.flexgalaxy;
+package ai.flexgalaxy.cql2.converter;
 
+import ai.flexgalaxy.cql2.ast.AstLiteral;
+import ai.flexgalaxy.cql2.ast.AstNode;
+import ai.flexgalaxy.cql2.ast.LiteralType;
+import ai.flexgalaxy.cql2.ast.Op2Type;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,15 +20,15 @@ public class JsonNodeToAST {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final GeoJsonReader reader = new GeoJsonReader();
 
-    public AstNode visit(JsonNode node) {
-        return visit(node, null);
+    public AstNode convert(JsonNode node) {
+        return convert(node, null);
     }
 
-    public AstNode visit(JsonNode node, String upperOp) {
+    public AstNode convert(JsonNode node, String upperOp) {
         if (node.isObject()) {
             if (node.has("op") && node.has("args") && node.get("args").isArray()) {
                 List<AstNode> list = new LinkedList<>();
-                node.get("args").forEach(arg -> list.add(visit(arg, node.get("op").asText())));
+                node.get("args").forEach(arg -> list.add(convert(arg, node.get("op").asText())));
                 return new AstNode(node.get("op").asText(), op2Type.type(node.get("op").asText()), list);
             }
             if (node.has("interval"))
@@ -44,7 +48,7 @@ public class JsonNodeToAST {
         }
         if (node.isArray()) {
             List<AstNode> list = new LinkedList<>();
-            node.forEach(item -> list.add(visit(item)));
+            node.forEach(item -> list.add(convert(item)));
             if (Objects.equals(upperOp, "in"))
                 return new AstNode(null, "inListOperands", list);
             else
@@ -93,7 +97,7 @@ public class JsonNodeToAST {
     private List<AstNode> readInterval(JsonNode node) {
         if (node.get("interval").isArray() && node.get("interval").size() == 2) {
             List<AstNode> list = new LinkedList<>();
-            node.get("interval").forEach(value -> list.add(visit(value)));
+            node.get("interval").forEach(value -> list.add(convert(value)));
             return list;
         } else {
             throw new RuntimeException("interval is not valid");

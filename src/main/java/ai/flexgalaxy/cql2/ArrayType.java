@@ -1,4 +1,4 @@
-package ai.flexgalaxy;
+package ai.flexgalaxy.cql2;
 
 public enum ArrayType {
     BuiltIn,  // PG: SELECT array_column FROM MY_TABLE WHERE array_column && ARRAY[1, 2];

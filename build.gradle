@@ -45,8 +45,8 @@ tasks.register('generateCppParser', JavaExec) {
             "-listener",
             "-visitor",
             "-package", "cql2g4cpp",
-            "src/main/resources/Cql2Parser.g4",
-            "src/main/resources/Cql2Lexer.g4"
+            "src/main/resources/antlr4/Cql2Parser.g4",
+            "src/main/resources/antlr4/Cql2Lexer.g4"
     ]
 }
 
@@ -61,8 +61,8 @@ tasks.register('generateJavaParser', JavaExec) {
             "-listener",
             "-visitor",
             "-package", "ai.flexgalaxy.Cql2g4",
-            "src/main/resources/Cql2Parser.g4",
-            "src/main/resources/Cql2Lexer.g4"
+            "src/main/resources/antlr4/Cql2Parser.g4",
+            "src/main/resources/antlr4/Cql2Lexer.g4"
     ]
 }
 

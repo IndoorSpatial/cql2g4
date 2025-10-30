@@ -2,7 +2,7 @@ package ai.flexgalaxy.test;
 
 import ai.flexgalaxy.Cql2g4.Cql2Lexer;
 import ai.flexgalaxy.Cql2g4.Cql2Parser;
-import ai.flexgalaxy.JsonConverterVisitor;
+import ai.flexgalaxy.cql2.converter.ParseTreeToJsonNode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NumericNode;
@@ -49,7 +49,7 @@ public class JsonConverterVisitorTest {
             System.out.println(tree.toStringTree(parser));
 
             // convert to json
-            JsonConverterVisitor visitor = new JsonConverterVisitor(tokens);
+            ParseTreeToJsonNode visitor = new ParseTreeToJsonNode(tokens);
             JsonNode convertJsonResult = visitor.visit(tree);
 
             // read expect json

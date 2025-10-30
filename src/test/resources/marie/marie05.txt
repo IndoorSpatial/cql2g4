@@ -1,0 +1,3 @@
+A_OVERLAPS(['id1', 'id2'], related_shelf_ids)
+AND
+A_CONTAINEDBY( ['PICKING'], labels)

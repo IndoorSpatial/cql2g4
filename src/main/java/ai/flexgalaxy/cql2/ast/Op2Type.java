@@ -1,9 +1,9 @@
-package ai.flexgalaxy;
+package ai.flexgalaxy.cql2.ast;
 
 import java.util.HashMap;
 
 public class Op2Type {
-    private HashMap<String, String> op2Type = new HashMap<>();
+    private final HashMap<String, String> op2Type = new HashMap<>();
     public Op2Type() {
         op2Type.put("or", "andOrExpression");
         op2Type.put("and", "andOrExpression");

@@ -1,6 +1,10 @@
 package ai.flexgalaxy.test;
 
-import ai.flexgalaxy.*;
+import ai.flexgalaxy.cql2.*;
+import ai.flexgalaxy.cql2.ast.AstNode;
+import ai.flexgalaxy.cql2.converter.AstToSql;
+import ai.flexgalaxy.cql2.converter.CustomGeometrySerializer;
+import ai.flexgalaxy.cql2.converter.JsonNodeToAST;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,14 +52,14 @@ class AstToSqlTest {
             System.out.println(originJsonContent);
 
             JsonNodeToAST toAst = new JsonNodeToAST();
-            AstNode astNode = toAst.visit(node);
+            AstNode astNode = toAst.convert(node);
             System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(astNode));
 
 
             for (SqlDialect dialect : SqlDialect.values()) {
                 if (dialect != SqlDialect.PostgreSQL) continue;
                 AstToSql toSql = new AstToSql();
-                String sqlWhere = toSql.visit(astNode);
+                String sqlWhere = toSql.convert(astNode);
                 String selectStr = "SELECT * FROM t WHERE " + sqlWhere + ";";
                 System.out.println(dialect + ": " +  selectStr);
                 Files.writeString(
@@ -72,7 +76,7 @@ class AstToSqlTest {
                 Statement statement = parser.Statement();
 
                 PlainSelect select = (PlainSelect)((Select)statement).getSelectBody();
-                PrintAst.printExpression(select.getWhere(), 0);
+                PrintSqlAst.printExpression(select.getWhere(), 0);
             }
         } catch (IOException | ParseException e) {
             System.out.println(e.getMessage());

@@ -1,7 +1,11 @@
-package ai.flexgalaxy;
+package ai.flexgalaxy.cql2;
 
 import ai.flexgalaxy.Cql2g4.Cql2Lexer;
 import ai.flexgalaxy.Cql2g4.Cql2Parser;
+import ai.flexgalaxy.cql2.ast.AstNode;
+import ai.flexgalaxy.cql2.converter.AstToSql;
+import ai.flexgalaxy.cql2.converter.JsonNodeToAST;
+import ai.flexgalaxy.cql2.converter.ParseTreeToJsonNode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -11,8 +15,8 @@ import org.antlr.v4.runtime.tree.ParseTree;
 
 public class Cql2G4 {
     private static final ObjectMapper objectMapper = new ObjectMapper();
-    static JsonNodeToAST jsonToAst = new JsonNodeToAST();
-    static AstToSql astToSql = new AstToSql();
+    static final JsonNodeToAST jsonToAst = new JsonNodeToAST();
+    static final AstToSql astToSql = new AstToSql();
 
     public static String textToSql(String cqlText) {
         return textToSql(cqlText, SqlDialect.PostgreSQL);
@@ -31,10 +35,10 @@ public class Cql2G4 {
             throw new IllegalArgumentException("SQL dialect not supported");
 
         // json node -> ast node
-        AstNode astNode = jsonToAst.visit(node);
+        AstNode astNode = jsonToAst.convert(node);
 
         // ast node -> sql
-        return astToSql.visit(astNode);
+        return astToSql.convert(astNode);
     }
 
     public static String jsonToSql(String cqlJson, SqlDialect sqlDialect) throws JsonProcessingException {
@@ -53,7 +57,7 @@ public class Cql2G4 {
         ParseTree tree = parser.booleanExpression();
 
         // parse tree -> json node
-        JsonConverterVisitor visitor = new JsonConverterVisitor(tokens);
+        ParseTreeToJsonNode visitor = new ParseTreeToJsonNode(tokens);
         return visitor.visit(tree);
     }
 

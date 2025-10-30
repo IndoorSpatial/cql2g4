@@ -1,5 +1,8 @@
-package ai.flexgalaxy;
+package ai.flexgalaxy.cql2.converter;
 
+import ai.flexgalaxy.cql2.ast.AstLiteral;
+import ai.flexgalaxy.cql2.ast.AstNode;
+import ai.flexgalaxy.cql2.ast.LiteralType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -18,25 +21,25 @@ public class AstToJsonNode {
         writer.setEncodeCRS(false);
     }
 
-    public JsonNode visit(AstNode node) {
+    public JsonNode convert(AstNode node) {
         if (node.getOp() != null) {
             ObjectNode obj = objectMapper.createObjectNode();
             obj.put("op", node.getOp());
             ArrayNode arr = objectMapper.createArrayNode();
-            node.getArgs().forEach((arg) -> arr.add(visit(arg)));
+            node.getArgs().forEach((arg) -> arr.add(convert(arg)));
             obj.set("args", arr);
             return obj;
         }
 
         if (node.getType().equals("arrayExpression") || node.getType().equals("inListOperands")) {
             ArrayNode arr = objectMapper.createArrayNode();
-            node.getArgs().forEach((arg) -> arr.add(visit(arg)));
+            node.getArgs().forEach((arg) -> arr.add(convert(arg)));
             return arr;
         }
 
         if (node.getType().equals("intervalInstance")) {
             ArrayNode arr = objectMapper.createArrayNode();
-            node.getArgs().forEach((arg) -> arr.add(visit(arg)));
+            node.getArgs().forEach((arg) -> arr.add(convert(arg)));
             ObjectNode obj = objectMapper.createObjectNode();
             obj.set("interval", arr);
             return obj;

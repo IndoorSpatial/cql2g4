@@ -1,4 +1,4 @@
-package ai.flexgalaxy;
+package ai.flexgalaxy.cql2;
 
 public enum SqlDialect {
     SQLite,

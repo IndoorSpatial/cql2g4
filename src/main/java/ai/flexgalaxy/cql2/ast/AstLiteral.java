@@ -1,4 +1,4 @@
-package ai.flexgalaxy;
+package ai.flexgalaxy.cql2.ast;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -16,5 +16,5 @@ public class AstLiteral extends AstNode {
     }
 
     @Override
-    boolean isLiteral() { return true; }
+    public boolean isLiteral() { return true; }
 }

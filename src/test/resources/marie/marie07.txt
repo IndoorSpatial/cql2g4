@@ -1,0 +1,2 @@
+S_INTERSECTS(space, BBOX(1, 2, 3, 4))
+AND type = 'laser'

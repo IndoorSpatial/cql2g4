@@ -1,5 +1,7 @@
-package ai.flexgalaxy;
+package ai.flexgalaxy.cql2.converter;
 
+import ai.flexgalaxy.cql2.ast.AstLiteral;
+import ai.flexgalaxy.cql2.ast.AstNode;
 import org.locationtech.jts.geom.Geometry;
 
 import java.util.HashMap;
@@ -12,16 +14,16 @@ public class AstToSql {
 
     private final HashMap<String, BiFunction<AstNode, String, String>> typedConverters = new HashMap<>();
 
-    Function<AstNode, String> binaryInfixOperator = node ->
-            visit(node.getArgs().getFirst()) + " " + node.getOp().toUpperCase() + " " + visit(node.getArgs().getLast());
-    Function<AstNode, String> unaryPrefixOperator = node ->
-            node.getOp().toUpperCase() + " (" + visit(node.getArgs().getFirst()) + ")";
-    BiFunction<AstNode, Function<String, String>, String> function = (node, fname) -> {
+    final Function<AstNode, String> binaryInfixOperator = node ->
+            convert(node.getArgs().getFirst()) + " " + node.getOp().toUpperCase() + " " + convert(node.getArgs().getLast());
+    final Function<AstNode, String> unaryPrefixOperator = node ->
+            node.getOp().toUpperCase() + " (" + convert(node.getArgs().getFirst()) + ")";
+    final BiFunction<AstNode, Function<String, String>, String> function = (node, fname) -> {
         StringBuilder sb = new StringBuilder();
         sb.append(fname.apply(node.getOp()));
         sb.append("(");
         for (int i = 0; i < node.getArgs().size(); i++) {
-            sb.append(visit(node.getArgs().get(i)));
+            sb.append(convert(node.getArgs().get(i)));
             if (i < node.getArgs().size() - 1)
                 sb.append(", ");
         }
@@ -29,18 +31,18 @@ public class AstToSql {
         return sb.toString();
     };
 
-    BiFunction<AstNode, String, String> arrayS = (node, surrounding) -> {
+    final BiFunction<AstNode, String, String> arrayS = (node, surrounding) -> {
         StringBuilder sb = new StringBuilder();
         sb.append(surrounding.charAt(0));
         for (int i = 0; i < node.getArgs().size(); i++) {
-            sb.append(visit(node.getArgs().get(i)));
+            sb.append(convert(node.getArgs().get(i)));
             if (i < node.getArgs().size() - 1)
                 sb.append(", ");
         }
         sb.append(surrounding.charAt(1));
         return sb.toString();
     };
-    Function<AstNode, String> array = (node) -> arrayS.apply(node, "()");
+    final Function<AstNode, String> array = (node) -> arrayS.apply(node, "()");
 
     public AstToSql() {
         typedConverters.put("andOrExpression", (node, pt) -> binaryInfixOperator.apply(node));
@@ -48,17 +50,17 @@ public class AstToSql {
         typedConverters.put("binaryComparisonPredicate", (node, pt) -> binaryInfixOperator.apply(node));
         typedConverters.put("arithmeticExpression", (node, pt) -> {
             if (node.getOp().equals("^"))
-                return "POWER(" + visit(node.getArgs().getFirst()) + ", " + visit(node.getArgs().getLast()) + ")";
+                return "POWER(" + convert(node.getArgs().getFirst()) + ", " + convert(node.getArgs().getLast()) + ")";
             else if (node.getOp().equals("div"))
-                return visit(node.getArgs().getFirst()) + " / " + visit(node.getArgs().getLast());
+                return convert(node.getArgs().getFirst()) + " / " + convert(node.getArgs().getLast());
             else
-                return visit(node.getArgs().getFirst()) + " " + node.getOp().toUpperCase() + " " + visit(node.getArgs().getLast());
+                return convert(node.getArgs().getFirst()) + " " + node.getOp().toUpperCase() + " " + convert(node.getArgs().getLast());
         });
         typedConverters.put("isLikePredicate", (node, pt) -> binaryInfixOperator.apply(node));
         typedConverters.put("isBetweenPredicate", (node, pt) ->
-                visit(node.getArgs().getFirst()) + " BETWEEN " + visit(node.getArgs().get(1)) + " AND " + visit(node.getArgs().getLast()));
+                convert(node.getArgs().getFirst()) + " BETWEEN " + convert(node.getArgs().get(1)) + " AND " + convert(node.getArgs().getLast()));
         typedConverters.put("isInListPredicate", (node, pt) -> binaryInfixOperator.apply(node));
-        typedConverters.put("isNullPredicate", (node, pt) -> visit(node.getArgs().getFirst()) + " IS NULL");
+        typedConverters.put("isNullPredicate", (node, pt) -> convert(node.getArgs().getFirst()) + " IS NULL");
         typedConverters.put("characterClause", (node, pt) -> {
             if (Objects.equals(node.getOp(), "accenti"))
                 return "UNACCENT" + array.apply(node);
@@ -68,8 +70,8 @@ public class AstToSql {
         });
         typedConverters.put("spatialPredicate", (node, pt) -> function.apply(node, op -> "ST" + op.substring(1).toUpperCase()));
         typedConverters.put("temporalPredicate", (node, pt) -> {
-            String lhs = visit(node.getArgs().getFirst());
-            String rhs = visit(node.getArgs().getLast());
+            String lhs = convert(node.getArgs().getFirst());
+            String rhs = convert(node.getArgs().getLast());
             if (!Objects.equals(node.getArgs().getFirst().getType(), "intervalInstance"))
                 lhs = "TSRANGE(" + lhs + ", " + lhs + ", '[]')";
             if (!Objects.equals(node.getArgs().getLast().getType(), "intervalInstance"))
@@ -109,14 +111,14 @@ public class AstToSql {
         typedConverters.put("arrayPredicate", (node, pt) ->
             switch (node.getOp()) {
                 case "a_overlaps" ->
-                    visit(node.getArgs().getFirst()) + " && " + visit(node.getArgs().getLast());
+                    convert(node.getArgs().getFirst()) + " && " + convert(node.getArgs().getLast());
                 case "a_contains" ->
-                    visit(node.getArgs().getFirst()) + " @> " + visit(node.getArgs().getLast());
+                    convert(node.getArgs().getFirst()) + " @> " + convert(node.getArgs().getLast());
                 case "a_containedBy" ->
-                    visit(node.getArgs().getFirst()) + " <@ " + visit(node.getArgs().getLast());
+                    convert(node.getArgs().getFirst()) + " <@ " + convert(node.getArgs().getLast());
                 case "a_equals" -> {
-                    String left = visit(node.getArgs().getFirst());
-                    String right = visit(node.getArgs().getLast());
+                    String left = convert(node.getArgs().getFirst());
+                    String right = convert(node.getArgs().getLast());
                     yield "(" + left + " @> " + right + ") AND (" + left + " <@ " + right + ")";
                 }
                 default -> throw new RuntimeException("unknow array operator " + node.getOp());
@@ -151,9 +153,9 @@ public class AstToSql {
         });
 
         typedConverters.put("intervalInstance", (node, pt) -> "TSRANGE(" +
-                visit(node.getArgs().getFirst(), node.getType()) +
+                convert(node.getArgs().getFirst(), node.getType()) +
                 ", " +
-                visit(node.getArgs().getLast(), node.getType()) +
+                convert(node.getArgs().getLast(), node.getType()) +
                 ", '[]')");
 
         typedConverters.put("Timestamp", (node, pt) -> "'" + ((AstLiteral) node).getValue() + "'");
@@ -174,11 +176,11 @@ public class AstToSql {
         });
     }
 
-    public String visit(AstNode node) {
-        return visit(node, null);
+    public String convert(AstNode node) {
+        return convert(node, null);
     }
 
-    public String visit(AstNode node, String parentType) {
+    private String convert(AstNode node, String parentType) {
         if (typedConverters.containsKey(node.getType()))
             return typedConverters.get(node.getType()).apply(node, parentType);
         else

@@ -1,0 +1,1 @@
+S_CONTAINS(space, POINT(0 0))
