@@ -17,14 +17,15 @@ public class Main {
         System.out.println("convert to json: " + cql2G4.textToJsonString(cqlText));
         System.out.println("convert to sql: " + cql2G4.textToSql(cqlText));
 
-        String cqlWithPropertyName = "speed > 3 AND is_valid = TRUE OR \"extra_info.score\" > 90";
+        String cqlWithPropertyName = "\"obj.key1\" = 'value1' AND \"obj.key2\" = 5";
         System.out.println("another cql text: " + cqlWithPropertyName);
         System.out.println("convert it to sql directly: " + cql2G4.textToSql(cqlWithPropertyName));
 
         HashMap<String, Queryable> queryables = new HashMap<>() {{
             put("speed", new Queryable("speed", SqlType.Float, QueryableType.ColumnName));
             put("is_valid", new Queryable("is_valid", SqlType.Boolean, QueryableType.JsonField));
-            put("extra_info.score", new Queryable("extra_info,score", SqlType.Integer, QueryableType.JsonField));
+            put("obj.key1", new Queryable("obj.key1", SqlType.Text, QueryableType.JsonField));
+            put("obj.key2", new Queryable("obj.key2", SqlType.Integer, QueryableType.JsonField));
         }};
         PropertyToQueryable propertyToQueryable = new PropertyToQueryable(queryables, "properties");
         Cql2G4 cql2G4WithQueryable = new Cql2G4(propertyToQueryable::toQueryable);

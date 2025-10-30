@@ -28,7 +28,11 @@ public class PropertyToQueryable {
                 case Boolean -> "boolean";
                 case Geometry -> "geometry";
             };
-            return String.format("%s #>> '%s'::%s", jsonColumnName, propertyName.replace('.', ','), sqlTypeString);
+            String result = String.format("(%s #> '{%s}')::%s", jsonColumnName, propertyName.replace('.', ','), sqlTypeString);
+            if (queryable.getSqlType() == SqlType.Text)
+                return "TRIM(BOTH '\"' FROM " + result + ")";
+            else
+                return result;
         }
 
         return null;
