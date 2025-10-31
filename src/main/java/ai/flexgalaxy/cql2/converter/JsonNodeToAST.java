@@ -78,11 +78,7 @@ public class JsonNodeToAST {
 
     private Geometry readGeoJson(JsonNode node) {
         try {
-            String geojson = objectMapper.writeValueAsString(node);
-            System.out.println(geojson);
-            var geom = reader.read(geojson);
-            System.out.println(geom.toText());
-            return geom;
+            return reader.read(objectMapper.writeValueAsString(node));
         } catch (JsonProcessingException | ParseException e) {
             System.out.println(e.getMessage());
             return null;

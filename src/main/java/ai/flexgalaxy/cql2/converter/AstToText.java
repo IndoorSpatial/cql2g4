@@ -3,7 +3,9 @@ package ai.flexgalaxy.cql2.converter;
 import ai.flexgalaxy.cql2.ast.AstNode;
 import ai.flexgalaxy.cql2.ast.AstNodeType;
 import org.locationtech.jts.geom.Geometry;
+import org.locationtech.jts.io.WKTWriter;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.BiFunction;
@@ -93,7 +95,11 @@ public class AstToText {
 
         typedConverters.put(GeometryLiteral, node -> {
             Geometry geom = node.getValue();
-            return geom.toText();
+            int outputDimension = 2;
+            if (Arrays.stream(geom.getCoordinates()).toList().stream().anyMatch(coor -> coor.getZ() != 0))
+                outputDimension = 3;
+            WKTWriter writer = new WKTWriter(outputDimension);
+            return writer.write(geom);
         });
 
         typedConverters.put(IntervalInstance, node ->
