@@ -80,7 +80,7 @@ public class AstToSql {
                 return "UNACCENT" + array.apply(node);
             if (Objects.equals(node.getOp(), "casei"))
                 return "LOWER" + array.apply(node);
-            return function.apply(node, String::toUpperCase);
+            return null;
         });
 
         typedConverters.put(SpatialPredicate, (node, pt) ->

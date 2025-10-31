@@ -49,8 +49,8 @@ public class ParseTreeToJsonNodeTest {
             System.out.println(tree.toStringTree(parser));
 
             // convert to json
-            ParseTreeToJsonNode visitor = new ParseTreeToJsonNode(tokens);
-            JsonNode convertJsonResult = visitor.visit(tree);
+            ParseTreeToJsonNode toJsonNode = new ParseTreeToJsonNode(tokens);
+            JsonNode convertJsonResult = toJsonNode.visit(tree);
 
             // read expect json
             String contentJson = Files.readString(pathJson, java.nio.charset.StandardCharsets.UTF_8);
