@@ -1,6 +1,9 @@
 package ai.flexgalaxy.cql2.ast;
 
+import java.util.LinkedList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -27,7 +30,27 @@ public class AstNode {
         this.value = value;
     }
 
+    @JsonIgnore
     public boolean isLiteral() {
         return type.toString().endsWith("Literal");
+    }
+
+    public String ToString() {
+        return String.join("\n", ToIndentExpression("    "));
+    }
+
+    private List<String> ToIndentExpression(String indent) {
+        List<String> result = new LinkedList<>();
+        if (isLiteral()) {
+            result.add("\"" + value + "\" (" + type + ")");
+            return result;
+        } else {
+            result.add((op == null ? "" : ("\"" + op + "\" ")) + "(" + type + ")");
+            if (args != null && !args.isEmpty()) {
+                List<String> argsResult = args.stream().map(arg -> arg.ToIndentExpression(indent)).flatMap(List::stream).toList();
+                argsResult.forEach(arg -> result.add(indent + arg));
+            }
+            return result;
+        }
     }
 }

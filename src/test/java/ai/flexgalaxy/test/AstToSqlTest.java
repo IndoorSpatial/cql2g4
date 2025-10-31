@@ -53,7 +53,7 @@ class AstToSqlTest {
 
             JsonNodeToAST toAst = new JsonNodeToAST();
             AstNode astNode = toAst.convert(node);
-            System.out.println(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(astNode));
+            System.out.println(astNode.ToString());
 
 
             for (SqlDialect dialect : SqlDialect.values()) {
