@@ -50,7 +50,8 @@ public class AstToSql {
     }
 
     public AstToSql(Function<String, String> propertyToQueryable) {
-        typedConverters.put(AndOrExpression, (node, pt) -> binaryInfixOperator.apply(node));
+        typedConverters.put(AndOrExpression, (node, pt) ->
+            String.join(" " + node.getOp().toUpperCase() + " ", node.getArgs().stream().map(this::convert).toList()));
 
         typedConverters.put(NotExpression, (node, pt) -> unaryPrefixOperator.apply(node));
 
