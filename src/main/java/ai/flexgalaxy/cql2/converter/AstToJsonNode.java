@@ -36,7 +36,7 @@ public class AstToJsonNode {
             return arr;
         }
 
-        if (node.getType().equals(AstNodeType.IntervalInstance)) {
+        if (node.getType() == AstNodeType.IntervalInstance) {
             ArrayNode arr = objectMapper.createArrayNode();
             node.getArgs().forEach((arg) -> arr.add(convert(arg)));
             ObjectNode obj = objectMapper.createObjectNode();

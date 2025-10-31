@@ -6,7 +6,6 @@ import ai.flexgalaxy.cql2.ast.AstNode;
 import ai.flexgalaxy.cql2.converter.sql.AstToSql;
 import ai.flexgalaxy.cql2.converter.JsonNodeToAST;
 import ai.flexgalaxy.cql2.converter.ParseTreeToJsonNode;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;

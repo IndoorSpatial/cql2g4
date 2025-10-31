@@ -12,6 +12,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
+import static ai.flexgalaxy.cql2.ast.AstNodeType.*;
+
 public class JsonNodeToAST {
     private final Op2Type op2Type = new Op2Type();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -28,38 +30,48 @@ public class JsonNodeToAST {
                 node.get("args").forEach(arg -> list.add(convert(arg, node.get("op").asText())));
                 return new AstNode(node.get("op").asText(), op2Type.type(node.get("op").asText()), list);
             }
+
             if (node.has("interval"))
-                return new AstNode(null, AstNodeType.IntervalInstance, readInterval(node));
+                return new AstNode(null, IntervalInstance, readInterval(node));
+
             if (node.has("type") && node.has("coordinates"))
-                return new AstNode(AstNodeType.GeometryLiteral, readGeoJson(node));
+                return new AstNode(GeometryLiteral, readGeoJson(node));
+
             if (node.has("type") && node.has("geometries"))
-                return new AstNode(AstNodeType.GeometryLiteral, readGeoJson(node));
+                return new AstNode(GeometryLiteral, readGeoJson(node));
+
             if (node.has("bbox"))
-                return new AstNode(AstNodeType.BBoxLiteral, readBbox(node));
+                return new AstNode(BBoxLiteral, readBbox(node));
+
             if (node.has("timestamp"))
-                return new AstNode(AstNodeType.TimestampLiteral, readTimestamp(node));
+                return new AstNode(TimestampLiteral, readTimestamp(node));
+
             if (node.has("date"))
-                return new AstNode(AstNodeType.DateLiteral, readDate(node));
+                return new AstNode(DateLiteral, readDate(node));
+
             if (node.has("property"))
-                return new AstNode(AstNodeType.PropertyLiteral, readProperty(node));
+                return new AstNode(PropertyLiteral, readProperty(node));
         }
         if (node.isArray()) {
             List<AstNode> list = new LinkedList<>();
             node.forEach(item -> list.add(convert(item)));
             if (Objects.equals(upperOp, "in"))
-                return new AstNode(null, AstNodeType.InListOperands, list);
+                return new AstNode(null, InListOperands, list);
             else
-                return new AstNode(null, AstNodeType.ArrayExpression, list);
+                return new AstNode(null, ArrayExpression, list);
         }
 
         if (node.isTextual())
-            return new AstNode(AstNodeType.StringLiteral, node.asText());
+            return new AstNode(StringLiteral, node.asText());
+
         if (node.isBoolean())
-            return new AstNode(AstNodeType.BooleanLiteral, node.asBoolean());
+            return new AstNode(BooleanLiteral, node.asBoolean());
+
         if (node.isIntegralNumber())
-            return new AstNode(AstNodeType.IntegerLiteral, node.asInt());
+            return new AstNode(IntegerLiteral, node.asInt());
+
         if (node.isNumber())
-            return new AstNode(AstNodeType.DoubleLiteral, node.asDouble());
+            return new AstNode(DoubleLiteral, node.asDouble());
 
         throw new RuntimeException("unsupported type: " + node.getNodeType());
     }

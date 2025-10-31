@@ -1,8 +1,6 @@
 package ai.flexgalaxy.cql2.ast;
 
 import java.util.List;
-
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 

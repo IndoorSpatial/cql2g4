@@ -51,8 +51,11 @@ public class AstToSql {
 
     public AstToSql(Function<String, String> propertyToQueryable) {
         typedConverters.put(AndOrExpression, (node, pt) -> binaryInfixOperator.apply(node));
+
         typedConverters.put(NotExpression, (node, pt) -> unaryPrefixOperator.apply(node));
+
         typedConverters.put(BinaryComparisonPredicate, (node, pt) -> binaryInfixOperator.apply(node));
+
         typedConverters.put(ArithmeticExpression, (node, pt) -> {
             if (node.getOp().equals("^"))
                 return "POWER(" + convert(node.getArgs().getFirst()) + ", " + convert(node.getArgs().getLast()) + ")";
@@ -61,10 +64,16 @@ public class AstToSql {
             else
                 return convert(node.getArgs().getFirst()) + " " + node.getOp().toUpperCase() + " " + convert(node.getArgs().getLast());
         });
+
         typedConverters.put(IsLikePredicate, (node, pt) -> binaryInfixOperator.apply(node));
-        typedConverters.put(IsBetweenPredicate, (node, pt) -> convert(node.getArgs().getFirst()) + " BETWEEN " + convert(node.getArgs().get(1)) + " AND " + convert(node.getArgs().getLast()));
+
+        typedConverters.put(IsBetweenPredicate, (node, pt) ->
+                convert(node.getArgs().getFirst()) +" BETWEEN " + convert(node.getArgs().get(1)) + " AND " + convert(node.getArgs().getLast()));
+
         typedConverters.put(IsInListPredicate, (node, pt) -> binaryInfixOperator.apply(node));
+
         typedConverters.put(IsNullPredicate, (node, pt) -> convert(node.getArgs().getFirst()) + " IS NULL");
+
         typedConverters.put(CharacterClause, (node, pt) -> {
             if (Objects.equals(node.getOp(), "accenti"))
                 return "UNACCENT" + array.apply(node);
@@ -72,7 +81,10 @@ public class AstToSql {
                 return "LOWER" + array.apply(node);
             return function.apply(node, String::toUpperCase);
         });
-        typedConverters.put(SpatialPredicate, (node, pt) -> function.apply(node, op -> "ST" + op.substring(1).toUpperCase()));
+
+        typedConverters.put(SpatialPredicate, (node, pt) ->
+                function.apply(node, op -> "ST" + op.substring(1).toUpperCase()));
+
         typedConverters.put(TemporalPredicate, (node, pt) -> {
             String lhs = convert(node.getArgs().getFirst());
             String rhs = convert(node.getArgs().getLast());
@@ -110,8 +122,8 @@ public class AstToSql {
 
                 default -> throw new IllegalStateException("Unexpected temporal operator: " + node.getOp());
             };
-
         });
+
         typedConverters.put(ArrayPredicate, (node, pt) ->
             switch (node.getOp()) {
                 case "a_overlaps" ->
@@ -127,7 +139,9 @@ public class AstToSql {
                 }
                 default -> throw new RuntimeException("unknow array operator " + node.getOp());
             });
+
         typedConverters.put(FunctionRef, (node, pt) -> function.apply(node, op -> op));
+
         typedConverters.put(PropertyLiteral, (node, pt) -> {
             String property_name = node.getValue();
             if (propertyToQueryable == null)
@@ -135,6 +149,7 @@ public class AstToSql {
             else
                 return propertyToQueryable.apply(property_name);
         });
+
         typedConverters.put(StringLiteral, (node, pt) -> {
             String value = node.getValue();
             if (pt == IntegerLiteral && Objects.equals(value, ".."))
@@ -142,18 +157,25 @@ public class AstToSql {
             else
                 return "'" + value + "'";
         });
+
         typedConverters.put(DoubleLiteral, (node, pt) -> Double.toString(node.getValue()));
+
         typedConverters.put(IntegerLiteral, (node, pt) -> Integer.toString(node.getValue()));
+
         typedConverters.put(BooleanLiteral, (node, pt) -> {
             boolean b = node.getValue();
             return b ? "TRUE" : "FALSE";
         });
+
         typedConverters.put(DateLiteral, (node, pt) -> {
             String date = node.getValue();
             return "DATE '" + date + "'";
         });
+
         typedConverters.put(ArrayExpression, (node, pt) -> "ARRAY " + arrayS.apply(node, "[]"));
+
         typedConverters.put(InListOperands, (node, pt) -> array.apply(node));
+
         typedConverters.put(GeometryLiteral, (node, pt) -> {
             Geometry geom = node.getValue();
             return "ST_GeomFromText('" + geom.toText() + "')";
@@ -166,6 +188,7 @@ public class AstToSql {
                 ", '[]')");
 
         typedConverters.put(TimestampLiteral, (node, pt) -> "'" + node.getValue() + "'");
+
         typedConverters.put(BBoxLiteral, (node, pt) -> {
             List<Double> bbox = node.getValue();
             double minx = bbox.get(0);
