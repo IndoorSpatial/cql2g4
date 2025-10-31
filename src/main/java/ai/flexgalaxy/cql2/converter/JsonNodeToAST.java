@@ -1,9 +1,6 @@
 package ai.flexgalaxy.cql2.converter;
 
-import ai.flexgalaxy.cql2.ast.AstLiteral;
-import ai.flexgalaxy.cql2.ast.AstNode;
-import ai.flexgalaxy.cql2.ast.LiteralType;
-import ai.flexgalaxy.cql2.ast.Op2Type;
+import ai.flexgalaxy.cql2.ast.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -32,37 +29,37 @@ public class JsonNodeToAST {
                 return new AstNode(node.get("op").asText(), op2Type.type(node.get("op").asText()), list);
             }
             if (node.has("interval"))
-                return new AstNode(null, "intervalInstance", readInterval(node));
+                return new AstNode(null, AstNodeType.IntervalInstance, readInterval(node));
             if (node.has("type") && node.has("coordinates"))
-                return new AstLiteral(LiteralType.Geometry, readGeoJson(node));
+                return new AstNode(AstNodeType.GeometryLiteral, readGeoJson(node));
             if (node.has("type") && node.has("geometries"))
-                return new AstLiteral(LiteralType.Geometry, readGeoJson(node));
+                return new AstNode(AstNodeType.GeometryLiteral, readGeoJson(node));
             if (node.has("bbox"))
-                return new AstLiteral(LiteralType.BBox, readBbox(node));
+                return new AstNode(AstNodeType.BBoxLiteral, readBbox(node));
             if (node.has("timestamp"))
-                return new AstLiteral(LiteralType.Timestamp, readTimestamp(node));
+                return new AstNode(AstNodeType.TimestampLiteral, readTimestamp(node));
             if (node.has("date"))
-                return new AstLiteral(LiteralType.Date, readDate(node));
+                return new AstNode(AstNodeType.DateLiteral, readDate(node));
             if (node.has("property"))
-                return new AstLiteral(LiteralType.Property, readProperty(node));
+                return new AstNode(AstNodeType.PropertyLiteral, readProperty(node));
         }
         if (node.isArray()) {
             List<AstNode> list = new LinkedList<>();
             node.forEach(item -> list.add(convert(item)));
             if (Objects.equals(upperOp, "in"))
-                return new AstNode(null, "inListOperands", list);
+                return new AstNode(null, AstNodeType.InListOperands, list);
             else
-                return new AstNode(null, "arrayExpression", list);
+                return new AstNode(null, AstNodeType.ArrayExpression, list);
         }
 
         if (node.isTextual())
-            return new AstLiteral(LiteralType.String, node.asText());
+            return new AstNode(AstNodeType.StringLiteral, node.asText());
         if (node.isBoolean())
-            return new AstLiteral(LiteralType.Boolean, node.asBoolean());
+            return new AstNode(AstNodeType.BooleanLiteral, node.asBoolean());
         if (node.isIntegralNumber())
-            return new AstLiteral(LiteralType.Integer, node.asInt());
+            return new AstNode(AstNodeType.IntegerLiteral, node.asInt());
         if (node.isNumber())
-            return new AstLiteral(LiteralType.Double, node.asDouble());
+            return new AstNode(AstNodeType.DoubleLiteral, node.asDouble());
 
         throw new RuntimeException("unsupported type: " + node.getNodeType());
     }

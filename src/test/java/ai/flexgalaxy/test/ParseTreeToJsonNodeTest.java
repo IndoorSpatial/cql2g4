@@ -18,14 +18,14 @@ import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class JsonConverterVisitorTest {
+public class ParseTreeToJsonNodeTest {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private final String textPrefix = "schema/1.0/examples/text/";
     private final String jsonPrefix = "schema/1.0/examples/json/";
     private final String projectRoot = System.getProperty("user.dir");
 
-    public JsonConverterVisitorTest() {
+    public ParseTreeToJsonNodeTest() {
     }
 
     public void convertTest() {
@@ -133,27 +133,27 @@ public class JsonConverterVisitorTest {
     @Test public void example33() { convertTest(); }
     @Test public void example34() { convertTest(); }
     @Test public void example35() { convertTest(); }
-//    @Test public void example36_alt01() { convertTest(); }
+//    @Test public void example36_alt01() { convertTest(); }  // no related json file
     @Test public void example36() { convertTest(); }
     @Test public void example37() { convertTest(); }
-//    @Test public void example38_alt01() { convertTest(); }
+//    @Test public void example38_alt01() { convertTest(); }  // no related json file
     @Test public void example38() { convertTest(); }
     @Test public void example39() { convertTest(); }
-//    @Test public void example40_alt01() { convertTest(); }
+//    @Test public void example40_alt01() { convertTest(); }  // no related json file
     @Test public void example40() { convertTest(); }
     @Test public void example41() { convertTest(); }
-//    @Test public void example42_alt01() { convertTest(); }
+//    @Test public void example42_alt01() { convertTest(); }  // no related json file
     @Test public void example42() { convertTest(); }
-//    @Test public void example43_alt01() { convertTest(); }
+//    @Test public void example43_alt01() { convertTest(); }  // no related json file
     @Test public void example43() { convertTest(); }
-//    @Test public void example44_alt01() { convertTest(); }
+//    @Test public void example44_alt01() { convertTest(); }  // no related json file
     @Test public void example44() { convertTest(); }
     @Test public void example45() { convertTest(); }
-//    @Test public void example46_alt01() { convertTest(); }
+//    @Test public void example46_alt01() { convertTest(); }  // no related json file
     @Test public void example46() { convertTest(); }
     @Test public void example47() { convertTest(); }
     @Test public void example48() { convertTest(); }
-//    @Test public void example49_alt01() { convertTest(); }
+//    @Test public void example49_alt01() { convertTest(); }  // no related json file
     @Test public void example49() { convertTest(); }
     @Test public void example50() { convertTest(); }
     @Test public void example51() { convertTest(); }
@@ -161,7 +161,7 @@ public class JsonConverterVisitorTest {
     @Test public void example53() { convertTest(); }
 //    @Test public void example54_alt01() { convertTest(); }
     @Test public void example54() { convertTest(); }
-//    @Test public void example55_alt01() { convertTest(); }
+//    @Test public void example55_alt01() { convertTest(); }  // no related json file
     @Test public void example55() { convertTest(); }
     @Test public void example56() { convertTest(); }
     @Test public void example57() { convertTest(); }
@@ -192,7 +192,7 @@ public class JsonConverterVisitorTest {
     @Test public void example82() { convertTest(); }
     @Test public void example83() { convertTest(); }
     @Test public void example84() { convertTest(); }
-//    @Test public void example85_alt01() { convertTest(); }
+//    @Test public void example85_alt01() { convertTest(); }  // no related json file
     @Test public void example85() { convertTest(); }
     @Test public void example86() { convertTest(); }
 }

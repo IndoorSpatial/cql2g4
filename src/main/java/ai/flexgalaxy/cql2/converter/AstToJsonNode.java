@@ -1,8 +1,7 @@
 package ai.flexgalaxy.cql2.converter;
 
-import ai.flexgalaxy.cql2.ast.AstLiteral;
 import ai.flexgalaxy.cql2.ast.AstNode;
-import ai.flexgalaxy.cql2.ast.LiteralType;
+import ai.flexgalaxy.cql2.ast.AstNodeType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,13 +30,13 @@ public class AstToJsonNode {
             return obj;
         }
 
-        if (node.getType().equals("arrayExpression") || node.getType().equals("inListOperands")) {
+        if (node.getType() == AstNodeType.ArrayExpression || node.getType() == AstNodeType.InListOperands) {
             ArrayNode arr = objectMapper.createArrayNode();
             node.getArgs().forEach((arg) -> arr.add(convert(arg)));
             return arr;
         }
 
-        if (node.getType().equals("intervalInstance")) {
+        if (node.getType().equals(AstNodeType.IntervalInstance)) {
             ArrayNode arr = objectMapper.createArrayNode();
             node.getArgs().forEach((arg) -> arr.add(convert(arg)));
             ObjectNode obj = objectMapper.createObjectNode();
@@ -46,26 +45,25 @@ public class AstToJsonNode {
         }
 
         if (node.isLiteral()) {
-            AstLiteral literal = (AstLiteral) node;
-            return switch (literal.getLiteralType()) {
-                case LiteralType.Property ->  {
+            return switch (node.getType()) {
+                case AstNodeType.PropertyLiteral ->  {
                     ObjectNode obj = objectMapper.createObjectNode();
-                    obj.put("property", (String)literal.getValue());
+                    obj.put("property", node.<String>getValue());
                     yield obj;
                 }
-                case LiteralType.Date -> {
+                case AstNodeType.DateLiteral -> {
                     ObjectNode obj = objectMapper.createObjectNode();
-                    obj.put("date", (String)literal.getValue());
+                    obj.put("date", node.<String>getValue());
                     yield obj;
                 }
-                case LiteralType.Timestamp -> {
+                case AstNodeType.TimestampLiteral -> {
                     ObjectNode obj = objectMapper.createObjectNode();
-                    obj.put("timestamp", (String)literal.getValue());
+                    obj.put("timestamp", node.<String>getValue());
                     yield obj;
                 }
-                case LiteralType.Geometry -> {
+                case AstNodeType.GeometryLiteral -> {
                     ObjectNode obj = objectMapper.createObjectNode();
-                    Geometry geom =  (Geometry) literal.getValue();
+                    Geometry geom = node.getValue();
                     String geojson = writer.write(geom);
                     try {
                         yield objectMapper.readTree(geojson);
@@ -73,15 +71,15 @@ public class AstToJsonNode {
                         yield obj;
                     }
                 }
-                case LiteralType.BBox -> {
+                case AstNodeType.BBoxLiteral -> {
                     ArrayNode arr = objectMapper.createArrayNode();
-                    List<Double> numbers = (List<Double>)literal.getValue();
+                    List<Double> numbers = node.getValue();
                     numbers.forEach(arr::add);
                     ObjectNode obj = objectMapper.createObjectNode();
                     obj.set("bbox", arr);
                     yield obj;
                 }
-                default -> objectMapper.valueToTree(literal.getValue());
+                default -> objectMapper.valueToTree(node.getValue());
             };
         }
 

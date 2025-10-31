@@ -30,9 +30,9 @@ import net.sf.jsqlparser.statement.Statement;
 
 class AstToSqlTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final String jsonPrefix = "schema/1.0/examples/json/";
-    private final String projectRoot = System.getProperty("user.dir");
-    private final String resultPrefix = "src/test/results/";
+    private final static String jsonPrefix = "schema/1.0/examples/json/";
+    private final static String projectRoot = System.getProperty("user.dir");
+    private final static String resultPrefix = "src/test/results/";
 
     public AstToSqlTest() {
         objectMapper.setDefaultPropertyInclusion(
