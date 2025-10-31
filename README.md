@@ -82,28 +82,33 @@ Both text and json format will be converted to AST.
 ```json
 {
   "op" : ">",
-  "type" : "binaryComparisonPredicate",
+  "type" : "BinaryComparisonPredicate",
   "args" : [ {
     "op" : "-",
-    "type" : "arithmeticExpression",
+    "type" : "ArithmeticExpression",
     "args" : [ {
-      "type" : "Property",
-      "value" : "balance",
-      "literalType" : "Property"
+      "type" : "PropertyLiteral",
+      "value" : "balance"
     }, {
-      "type" : "Double",
-      "value" : 150.0,
-      "literalType" : "Double"
+      "type" : "DoubleLiteral",
+      "value" : 150.0
     } ]
   }, {
-    "type" : "Integer",
-    "value" : 0,
-    "literalType" : "Integer"
+    "type" : "IntegerLiteral",
+    "value" : 0
   } ]
 }
 ```
-It looks like json format but contains extra type information for example "arithmeticExpression", "Property".
+It looks like json format but contains extra type information for example "ArithmeticExpression", "PropertyLiteral".
 The type information may help converters to do the conversion recursively.
+We also provide to ToString() function in AstNode to convert AST tree into simple text format:
+```test
+">" (BinaryComparisonPredicate)
+    "-" (ArithmeticExpression)
+        "balance" (PropertyLiteral)
+        "150.0" (DoubleLiteral)
+    "0" (IntegerLiteral)
+```
 
 ## SQL
 ```sql

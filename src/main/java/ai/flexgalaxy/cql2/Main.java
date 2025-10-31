@@ -15,6 +15,7 @@ public class Main {
 
         Cql2G4 cql2G4 = new Cql2G4();
         System.out.println("convert to json: " + cql2G4.textToJsonString(cqlText));
+        System.out.println("convert to ast:\n" + cql2G4.textToAst(cqlText).ToString());
         System.out.println("convert to sql: " + cql2G4.textToSql(cqlText));
 
         String cqlWithPropertyName = "\"obj.key1\" = 'value1' AND \"obj.key2\" = 5";

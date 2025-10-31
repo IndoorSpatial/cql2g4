@@ -69,7 +69,7 @@ public class Cql2G4 {
         return astToSql.convert(astNode);
     }
 
-    public String jsonToSql(String cqlJson, SqlDialect sqlDialect) throws JsonProcessingException {
+    public String jsonStringToSql(String cqlJson, SqlDialect sqlDialect) throws JsonProcessingException {
         // json string -> json node
         JsonNode jsonNode = objectMapper.readTree(cqlJson);
 
@@ -85,8 +85,8 @@ public class Cql2G4 {
         ParseTree tree = parser.booleanExpression();
 
         // parse tree -> json node
-        ParseTreeToJsonNode visitor = new ParseTreeToJsonNode(tokens);
-        return visitor.visit(tree);
+        ParseTreeToJsonNode toJsonNode = new ParseTreeToJsonNode(tokens);
+        return toJsonNode.visit(tree);
     }
 
     public String textToJsonString(String cqlText) throws JsonProcessingException {
@@ -95,5 +95,25 @@ public class Cql2G4 {
 
         // json node -> json string
         return objectMapper.writeValueAsString(jsonNode);
+    }
+
+    public AstNode jsonNodeToAst(JsonNode jsonNode) {
+        return jsonToAst.convert(jsonNode);
+    }
+
+    public AstNode jsonStringToAst(String cqlJson) throws JsonProcessingException {
+        // json string -> json node
+        JsonNode jsonNode = objectMapper.readTree(cqlJson);
+
+        // json node -> ast
+        return jsonToAst.convert(jsonNode);
+    }
+
+    public AstNode textToAst(String cqlText) {
+        // text -> json node
+        JsonNode jsonNode = textToJsonNode(cqlText);
+
+        // json node -> ast
+        return jsonToAst.convert(jsonNode);
     }
 }
