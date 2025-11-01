@@ -1,7 +1,7 @@
 package ai.flexgalaxy.cql2.converter;
 
-import ai.flexgalaxy.Cql2g4.Cql2Lexer;
-import ai.flexgalaxy.Cql2g4.Cql2Parser;
+import ai.flexgalaxy.cql2.Cql2Lexer;
+import ai.flexgalaxy.cql2.Cql2Parser;
 import ai.flexgalaxy.cql2.ast.AstNode;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.JsonNode;

@@ -1,6 +1,6 @@
 package ai.flexgalaxy.cql2.converter;
 
-import ai.flexgalaxy.Cql2g4.Cql2Parser;
+import ai.flexgalaxy.cql2.Cql2Parser;
 import ai.flexgalaxy.cql2.ast.AstNode;
 import ai.flexgalaxy.cql2.ast.AstNodeType;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,7 +19,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
-public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<AstNode> {
+public class ParseTreeToAst extends ai.flexgalaxy.cql2.Cql2ParserBaseVisitor<AstNode> {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final GeoJsonWriter writer = new GeoJsonWriter();
     private final WKTReader reader = new WKTReader();

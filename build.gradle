@@ -60,7 +60,7 @@ tasks.register('generateJavaParser', JavaExec) {
             "-Dlanguage=Java",
             "-listener",
             "-visitor",
-            "-package", "ai.flexgalaxy.Cql2g4",
+            "-package", "ai.flexgalaxy.cql2",
             "src/main/resources/antlr4/Cql2Parser.g4",
             "src/main/resources/antlr4/Cql2Lexer.g4"
     ]

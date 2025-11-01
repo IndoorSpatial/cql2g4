@@ -20,8 +20,8 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import ai.flexgalaxy.Cql2g4.Cql2Lexer;
-import ai.flexgalaxy.Cql2g4.Cql2Parser;
+import ai.flexgalaxy.cql2.Cql2Lexer;
+import ai.flexgalaxy.cql2.Cql2Parser;
 import ai.flexgalaxy.cql2.ast.AstNode;
 
 class ParseTreeToAstTest {

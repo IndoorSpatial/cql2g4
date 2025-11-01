@@ -21,8 +21,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.NumericNode;
 
-import ai.flexgalaxy.Cql2g4.Cql2Lexer;
-import ai.flexgalaxy.Cql2g4.Cql2Parser;
+import ai.flexgalaxy.cql2.Cql2Lexer;
+import ai.flexgalaxy.cql2.Cql2Parser;
 
 public class ParseTreeToJsonNodeTest {
     private static final ObjectMapper objectMapper = new ObjectMapper();

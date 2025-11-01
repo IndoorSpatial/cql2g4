@@ -11,7 +11,7 @@ import java.util.Locale;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 
-import ai.flexgalaxy.Cql2g4.Cql2Parser;
+import ai.flexgalaxy.cql2.Cql2Parser;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -23,7 +23,7 @@ import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 import org.locationtech.jts.io.geojson.GeoJsonWriter;
 
-public class ParseTreeToJsonNode extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<JsonNode> {
+public class ParseTreeToJsonNode extends ai.flexgalaxy.cql2.Cql2ParserBaseVisitor<JsonNode> {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final GeoJsonWriter writer = new GeoJsonWriter();
     private final WKTReader reader = new WKTReader();
