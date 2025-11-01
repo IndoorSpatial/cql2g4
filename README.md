@@ -14,28 +14,41 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public class Main {
     public static void main(String[] args) throws JsonProcessingException {
         String cqlText = "speed > 3 AND S_CONTAINS(POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0)), location)";
-        System.out.println(cqlText);
-        System.out.println(Cql2G4.textToJsonString(cqlText));
+        System.out.println("origin cql text: " + cqlText);
+
+        Cql2G4 cql2G4 = new Cql2G4();
+        AstNode astNode = cql2G4.textToAst(cqlText);
+        System.out.println("convert to ast:\n" + astNode.ToString());
         /*
-        {
-          "op" : "and",
-          "args" : [ {
-            "op" : ">",
-            "args" : [ {
-              "property" : "speed"
-            }, 3 ]
-          }, {
-            "op" : "s_contains",
-            "args" : [ {
-              "type" : "Polygon",
-              "coordinates" : [ [ [ 0.0, 0.0 ], [ 1, 0.0 ], [ 1, 1 ], [ 0.0, 1 ], [ 0.0, 0.0 ] ] ]
-            }, {
-              "property" : "location"
-            } ]
-          } ]
-        }
+            "and" (AndOrExpression)
+                ">" (BinaryComparisonPredicate)
+                    "speed" (PropertyLiteral)
+                    "3" (IntegerLiteral)
+                "s_contains" (SpatialPredicate)
+                    "POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))" (GeometryLiteral)
+                    "location" (PropertyLiteral)
+         */
+        System.out.println("convert to json: " + cql2G4.astToJsonString(astNode));
+        /*
+            {
+              "op" : "and",
+              "args" : [ {
+                "op" : ">",
+                "args" : [ {
+                  "property" : "speed"
+                }, 3 ]
+              }, {
+                "op" : "s_contains",
+                "args" : [ {
+                  "type" : "Polygon",
+                  "coordinates" : [ [ [ 0.0, 0.0 ], [ 1, 0.0 ], [ 1, 1 ], [ 0.0, 1 ], [ 0.0, 0.0 ] ] ]
+                }, {
+                  "property" : "location"
+                } ]
+              } ]
+            }
         */
-        System.out.println(Cql2G4.textToSql(cqlText));
+        System.out.println("convert to sql: " + cql2G4.astToSql(astNode));
         /*
           "speed" > 3 AND ST_CONTAINS(ST_GeomFromText('POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0))'), "location")
         */
