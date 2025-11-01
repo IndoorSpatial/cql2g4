@@ -1,4 +1,4 @@
-package ai.flexgalaxy.test;
+package ai.flexgalaxy.cql2.converter;
 
 import net.sf.jsqlparser.statement.select.*;
 import net.sf.jsqlparser.expression.*;
