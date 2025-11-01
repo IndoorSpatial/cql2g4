@@ -44,8 +44,9 @@ public class Main {
 ```
 
 # Expression format
-![cql2g4_progress_20251101.png](doc/cql2g4_progress_20251101.png)
 There are 6 related expression formats in cql2g4.
+
+![cql2g4_progress_20251101.png](doc/cql2g4_progress_20251101.png)
 
 ## Text
 This is text format defined in the cql2 standard
