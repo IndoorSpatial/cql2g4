@@ -42,27 +42,27 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
         return new AstNode("not", AstNodeType.NotExpression, new LinkedList<>() {{ add(node); }});
     }
 
-    private AstNode OpArgs(String op, List<? extends ParserRuleContext> ctxs) {
+    private AstNode OpArgs(String op, AstNodeType nodeType, List<? extends ParserRuleContext> ctxs) {
         List<AstNode> args = new LinkedList<>();
         ctxs.forEach(ctx -> args.add(visit(ctx)));
-        return new AstNode(op, AstNodeType.FunctionRef, args);  // TODO: unknown ast node type
+        return new AstNode(op, nodeType, args);
     }
 
-    private AstNode OpArgs(String op, AstNode node, List<? extends ParserRuleContext> ctxs) {
+    private AstNode OpArgs(String op, AstNodeType nodeType, AstNode node, List<? extends ParserRuleContext> ctxs) {
         List<AstNode> args = new LinkedList<>();
         args.add(node);
         ctxs.forEach(ctx -> args.add(visit(ctx)));
-        return new AstNode(op, AstNodeType.FunctionRef, args);  // TODO: unknown ast node type
+        return new AstNode(op, nodeType, args);
     }
 
-    private AstNode OpArgs(String op, ParserRuleContext... ctxs) {
+    private AstNode OpArgs(String op, AstNodeType nodeType, ParserRuleContext... ctxs) {
         List<ParserRuleContext> ctxsList = Arrays.asList(ctxs);
-        return OpArgs(op, ctxsList);
+        return OpArgs(op, nodeType, ctxsList);
     }
 
-    private AstNode OpArgs(String op, AstNode node, ParserRuleContext... ctxs) {
+    private AstNode OpArgs(String op, AstNodeType nodeType, AstNode node, ParserRuleContext... ctxs) {
         List<ParserRuleContext> ctxsList = Arrays.asList(ctxs);
-        return OpArgs(op, node, ctxsList);
+        return OpArgs(op, nodeType, node, ctxsList);
     }
 
     private List<AstNode> Args(List<? extends ParserRuleContext> ctxs) {
@@ -100,7 +100,7 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
     @Override
     public AstNode visitBooleanExpression(Cql2Parser.BooleanExpressionContext ctx) {
         if (ctx.booleanTerm().size() > 1)
-            return OpArgs("or", ctx.booleanTerm());
+            return OpArgs("or", AstNodeType.AndOrExpression, ctx.booleanTerm());
         else
             return visit(ctx.booleanTerm().getFirst());
     }
@@ -108,7 +108,7 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
     @Override
     public AstNode visitBooleanTerm(Cql2Parser.BooleanTermContext ctx) {
         if (ctx.booleanFactor().size() > 1)
-            return OpArgs("and", ctx.booleanFactor());
+            return OpArgs("and", AstNodeType.AndOrExpression, ctx.booleanFactor());
         else
             return visit(ctx.booleanFactor().getFirst());
     }
@@ -149,7 +149,7 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
 
     @Override
     public AstNode visitBinaryComparisonPredicate(Cql2Parser.BinaryComparisonPredicateContext ctx) {
-        return OpArgs(ctx.COMP_OP().getText(), ctx.scalarExpression());
+        return OpArgs(ctx.COMP_OP().getText(), AstNodeType.BinaryComparisonPredicate, ctx.scalarExpression());
     }
 
     @Override
@@ -166,23 +166,23 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
 
     @Override
     public AstNode visitIsLikePredicate(Cql2Parser.IsLikePredicateContext ctx) {
-        AstNode n = OpArgs("like", ctx.characterExpression(), ctx.patternExpression());
+        AstNode n = OpArgs("like", AstNodeType.IsLikePredicate, ctx.characterExpression(), ctx.patternExpression());
         return ctx.NOT() == null ? n : Not(n);
     }
 
     @Override
     public AstNode visitPatternExpression(Cql2Parser.PatternExpressionContext ctx) {
         if (ctx.CASEI() != null) {
-            return OpArgs("casei", ctx.patternExpression());
+            return OpArgs("casei", AstNodeType.CharacterClause, ctx.patternExpression());
         } else if (ctx.ACCENTI() != null) {
-            return OpArgs("accenti", ctx.patternExpression());
+            return OpArgs("accenti", AstNodeType.CharacterClause, ctx.patternExpression());
         }
         return null;
     }
 
     @Override
     public AstNode visitIsBetweenPredicate(Cql2Parser.IsBetweenPredicateContext ctx) {
-        AstNode n = OpArgs("between", ctx.numericExpression());
+        AstNode n = OpArgs("between", AstNodeType.IsBetweenPredicate, ctx.numericExpression());
         return ctx.NOT() == null ? n : Not(n);
     }
 
@@ -197,7 +197,7 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
 
     @Override
     public AstNode visitIsInListPredicate(Cql2Parser.IsInListPredicateContext ctx) {
-        AstNode n = OpArgs("in", ctx.scalarExpression(), ctx.inList());
+        AstNode n = OpArgs("in", AstNodeType.IsInListPredicate, ctx.scalarExpression(), ctx.inList());
         return ctx.NOT() == null ? n : Not(n);
     }
 
@@ -208,7 +208,7 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
 
     @Override
     public AstNode visitIsNullPredicate(Cql2Parser.IsNullPredicateContext ctx) {
-        AstNode n = OpArgs("isNull", ctx.isNullOperand());
+        AstNode n = OpArgs("isNull", AstNodeType.IsNullPredicate, ctx.isNullOperand());
         return ctx.NOT() == null ? n : Not(n);
     }
 
@@ -227,7 +227,7 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
 
     @Override
     public AstNode visitSpatialPredicate(Cql2Parser.SpatialPredicateContext ctx) {
-        return OpArgs(ctx.SPATIAL_FUNC().getText().toLowerCase(), ctx.geomExpression());
+        return OpArgs(ctx.SPATIAL_FUNC().getText().toLowerCase(), AstNodeType.SpatialPredicate, ctx.geomExpression());
     }
 
     @Override
@@ -240,7 +240,7 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
 
     @Override
     public AstNode visitTemporalPredicate(Cql2Parser.TemporalPredicateContext ctx) {
-        return OpArgs(toLowerCase(ctx.TEMPORAL_FUNC().getText()), ctx.temporalExpression());
+        return OpArgs(toLowerCase(ctx.TEMPORAL_FUNC().getText()), AstNodeType.TemporalPredicate, ctx.temporalExpression());
     }
 
     @Override
@@ -253,7 +253,7 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
 
     @Override
     public AstNode visitArrayPredicate(Cql2Parser.ArrayPredicateContext ctx) {
-        return OpArgs(toLowerCase(ctx.ARRAY_FUNC().getText()), ctx.arrayExpression());
+        return OpArgs(toLowerCase(ctx.ARRAY_FUNC().getText()), AstNodeType.ArrayPredicate, ctx.arrayExpression());
     }
 
     @Override
@@ -287,7 +287,7 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
     public AstNode visitArithmeticExpression(Cql2Parser.ArithmeticExpressionContext ctx) {
         AstNode n = visit(ctx.arithmeticTerm().getFirst());
         for (int i = 0; i < ctx.Sign().size(); i++)
-            n = OpArgs(ctx.Sign(i).getText(), n, ctx.arithmeticTerm(i + 1));
+            n = OpArgs(ctx.Sign(i).getText(), AstNodeType.ArithmeticExpression, n, ctx.arithmeticTerm(i + 1));
         return n;
     }
 
@@ -295,14 +295,14 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
     public AstNode visitArithmeticTerm(Cql2Parser.ArithmeticTermContext ctx) {
         AstNode n = visit(ctx.powerTerm().getFirst());
         for (int i = 0; i < ctx.ArithmeticOperatorMultDiv().size(); i++)
-            n = OpArgs(ctx.ArithmeticOperatorMultDiv(i).getText(), n, ctx.powerTerm(i + 1));
+            n = OpArgs(ctx.ArithmeticOperatorMultDiv(i).getText(), AstNodeType.ArithmeticExpression, n, ctx.powerTerm(i + 1));
         return n;
     }
 
     @Override
     public AstNode visitPowerTerm(Cql2Parser.PowerTermContext ctx) {
         if (ctx.POWER() != null)
-            return OpArgs(ctx.POWER().getText(), ctx.arithmeticFactor());
+            return OpArgs(ctx.POWER().getText(), AstNodeType.ArithmeticExpression, ctx.arithmeticFactor());
         else
             return visit(ctx.arithmeticFactor().getFirst());
     }
@@ -310,7 +310,7 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
     @Override
     public AstNode visitArithmeticFactor(Cql2Parser.ArithmeticFactorContext ctx) {
         if (ctx.arithmeticExpression() != null) return visit(ctx.arithmeticExpression());
-        if (ctx.Sign() != null) return OpArgs(ctx.Sign().getText(), ctx.arithmeticOperand());
+        if (ctx.Sign() != null) return OpArgs(ctx.Sign().getText(), AstNodeType.ArithmeticExpression, ctx.arithmeticOperand());
         else return visit(ctx.arithmeticOperand());
     }
 
@@ -329,7 +329,7 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
 
     @Override
     public AstNode visitFunction(Cql2Parser.FunctionContext ctx) {
-        return OpArgs(ctx.Identifier().getText(), ctx.argumentList().argument());
+        return OpArgs(ctx.Identifier().getText(), AstNodeType.FunctionRef, ctx.argumentList().argument());
     }
 
     @Override
@@ -357,11 +357,11 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
     @Override
     public AstNode visitCharacterClause(Cql2Parser.CharacterClauseContext ctx) {
         if (ctx.CASEI() != null) {
-            return OpArgs("casei", ctx.characterExpression());
+            return OpArgs("casei", AstNodeType.CharacterClause, ctx.characterExpression());
         } else if (ctx.ACCENTI() != null) {
-            return OpArgs("accenti", ctx.characterExpression());
+            return OpArgs("accenti", AstNodeType.CharacterClause, ctx.characterExpression());
         }
-        return null;
+        return new AstNode(AstNodeType.StringLiteral, ctx.CharacterLiteral().getText());
     }
 
     @Override

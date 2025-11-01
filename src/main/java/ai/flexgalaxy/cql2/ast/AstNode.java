@@ -2,6 +2,7 @@ package ai.flexgalaxy.cql2.ast;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
@@ -47,7 +48,8 @@ public class AstNode {
         } else {
             result.add((op == null ? "" : ("\"" + op + "\" ")) + "(" + type + ")");
             if (args != null && !args.isEmpty()) {
-                List<String> argsResult = args.stream().map(arg -> arg.ToIndentExpression(indent)).flatMap(List::stream).toList();
+                List<String> argsResult = args.stream().filter(Objects::nonNull)
+                        .map(arg -> arg.ToIndentExpression(indent)).flatMap(List::stream).toList();
                 argsResult.forEach(arg -> result.add(indent + arg));
             }
             return result;
