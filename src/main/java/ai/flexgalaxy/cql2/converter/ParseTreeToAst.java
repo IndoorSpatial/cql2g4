@@ -3,10 +3,7 @@ package ai.flexgalaxy.cql2.converter;
 import ai.flexgalaxy.Cql2g4.Cql2Parser;
 import ai.flexgalaxy.cql2.ast.AstNode;
 import ai.flexgalaxy.cql2.ast.AstNodeType;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.locationtech.jts.io.ParseException;
@@ -177,7 +174,7 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
         } else if (ctx.ACCENTI() != null) {
             return OpArgs("accenti", AstNodeType.CharacterClause, ctx.patternExpression());
         }
-        return null;
+        return new AstNode(AstNodeType.StringLiteral, trim(ctx.CharacterLiteral().getText(), '\''));
     }
 
     @Override
@@ -361,7 +358,7 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
         } else if (ctx.ACCENTI() != null) {
             return OpArgs("accenti", AstNodeType.CharacterClause, ctx.characterExpression());
         }
-        return new AstNode(AstNodeType.StringLiteral, ctx.CharacterLiteral().getText());
+        return new AstNode(AstNodeType.StringLiteral, trim(ctx.CharacterLiteral().getText(), '\''));
     }
 
     @Override
@@ -404,7 +401,17 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
 
     @Override
     public AstNode visitBboxTaggedText(Cql2Parser.BboxTaggedTextContext ctx) {
-        return new AstNode(AstNodeType.BBoxLiteral, visit(ctx.bboxText()));
+        Cql2Parser.BboxTextContext bboxText = ctx.bboxText();
+        List<Double> values = new LinkedList<>();
+        values.add(Double.parseDouble(bboxText.westBoundLon().getText()));
+        values.add(Double.parseDouble(bboxText.southBoundLat().getText()));
+        if (bboxText.minElev() != null)
+            values.add(Double.parseDouble(bboxText.minElev().getText()));
+        values.add(Double.parseDouble(bboxText.eastBoundLon().getText()));
+        values.add(Double.parseDouble(bboxText.northBoundLat().getText()));
+        if (bboxText.maxElev() != null)
+            values.add(Double.parseDouble(bboxText.maxElev().getText()));
+        return new AstNode(AstNodeType.BBoxLiteral, values);
     }
 
     @Override
@@ -443,10 +450,10 @@ public class ParseTreeToAst extends ai.flexgalaxy.Cql2g4.Cql2ParserBaseVisitor<A
         if (ctx.CharacterLiteral() != null) {
             String trimed = trim(ctx.CharacterLiteral().getText(), '\'');
             if (trimed.equals("..") || !trimed.contains("T")) {
-                return new AstNode(AstNodeType.DateLiteral, trimed);
+                return new AstNode(AstNodeType.StringLiteral, trimed);
             } else {
                 OffsetDateTime odt = OffsetDateTime.parse(trimed, DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-                return new AstNode(AstNodeType.TimestampLiteral, odt.format(formatter));
+                return new AstNode(AstNodeType.StringLiteral, odt.format(formatter));
             }
         }
 
