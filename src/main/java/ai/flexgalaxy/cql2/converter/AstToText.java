@@ -117,7 +117,7 @@ public class AstToText {
         });
     }
 
-    String convert(AstNode node) {
+    public String convert(AstNode node) {
         if (typedConverters.containsKey(node.getType()))
             return typedConverters.get(node.getType()).apply(node);
         else

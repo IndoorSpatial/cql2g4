@@ -101,7 +101,7 @@ Both text and json format will be converted to AST.
 ```
 It looks like json format but contains extra type information for example "ArithmeticExpression", "PropertyLiteral".
 The type information may help converters to do the conversion recursively.
-We also provide to ToString() function in AstNode to convert AST tree into simple text format:
+We also provide a ToString(not toString) function in AstNode to convert AST tree into simple text format:
 ```test
 ">" (BinaryComparisonPredicate)
     "-" (ArithmeticExpression)

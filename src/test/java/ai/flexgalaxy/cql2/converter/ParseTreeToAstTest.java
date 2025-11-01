@@ -5,7 +5,6 @@ import ai.flexgalaxy.Cql2g4.Cql2Parser;
 import ai.flexgalaxy.cql2.ast.AstNode;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.NumericNode;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;

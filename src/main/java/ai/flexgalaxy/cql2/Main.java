@@ -1,5 +1,6 @@
 package ai.flexgalaxy.cql2;
 
+import ai.flexgalaxy.cql2.ast.AstNode;
 import ai.flexgalaxy.cql2.converter.sql.PropertyToQueryable;
 import ai.flexgalaxy.cql2.converter.sql.Queryable;
 import ai.flexgalaxy.cql2.converter.sql.QueryableType;
@@ -14,13 +15,15 @@ public class Main {
         System.out.println("origin cql text: " + cqlText);
 
         Cql2G4 cql2G4 = new Cql2G4();
-        System.out.println("convert to json: " + cql2G4.textToJsonString(cqlText));
-        System.out.println("convert to ast:\n" + cql2G4.textToAst(cqlText).ToString());
-        System.out.println("convert to sql: " + cql2G4.textToSql(cqlText));
+        AstNode astNode = cql2G4.textToAst(cqlText);
+        System.out.println("convert to ast:\n" + astNode.ToString());
+        System.out.println("convert to json: " + cql2G4.astToJsonString(astNode));
+        System.out.println("convert to sql: " + cql2G4.astToSql(astNode));
 
         String cqlWithPropertyName = "\"obj.key1\" = 'value1' AND \"obj.key2\" = 5";
         System.out.println("another cql text: " + cqlWithPropertyName);
-        System.out.println("convert it to sql directly: " + cql2G4.textToSql(cqlWithPropertyName));
+        AstNode astNode2 = cql2G4.textToAst(cqlWithPropertyName);
+        System.out.println("convert it to sql directly: " + cql2G4.astToSql(astNode2));
 
         HashMap<String, Queryable> queryables = new HashMap<>() {{
             put("speed", new Queryable("speed", SqlType.Float, QueryableType.ColumnName));
@@ -30,6 +33,6 @@ public class Main {
         }};
         PropertyToQueryable propertyToQueryable = new PropertyToQueryable(queryables, "properties");
         Cql2G4 cql2G4WithQueryable = new Cql2G4(propertyToQueryable::toQueryable);
-        System.out.println("convert it to sql according to queryables: " +  cql2G4WithQueryable.textToSql(cqlWithPropertyName));
+        System.out.println("convert it to sql according to queryables: " +  cql2G4WithQueryable.astToSql(astNode2));
     }
 }
