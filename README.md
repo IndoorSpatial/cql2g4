@@ -12,7 +12,7 @@ import ai.flexgalaxy.cql2.Cql2G4;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 public class Main {
-    public static void main(String[] args) throws JsonProcessingException {
+    static void main(String[] args) throws JsonProcessingException {
         String cqlText = "speed > 3 AND S_CONTAINS(POLYGON ((0 0, 1 0, 1 1, 0 1, 0 0)), location)";
         System.out.println("origin cql text: " + cqlText);
 
@@ -156,21 +156,6 @@ We will support other mainstream SQL dialects in the future.
 | CASEI(road_class) IN (CASEI('Οδος'),CASEI('Straße'))                                             | LOWER(road_class) IN (LOWER('Οδος'),LOWER('Straße'))                                                                                              |
 | my_function(windSpeed) < 4                                                                       | my_function("windSpeed") < 4 --(user defined function needed)                                                                                     |
 
-# History
-Syrius Robotics has been focused on developing applications for indoor robots, which led us to create an indoor geographic information system.
-At the end of 2024, while working on this system, we recognized the need for a filter language to help robots query indoor features more efficiently.
-Around that time, OGC CQL2 had just been released, but there were no existing any libraries available for it.
-As a result, Syrius Robotics decided to develop their own solution.
-
-Since the end of 2024, we have developed cql2cpp, a C++ parsing library, based on Flex and Bison.
-However, this library can only be used on our embedded devices, which are robots.
-To enable its use in server-side GIS, we have started reconstructing it based on ANTLR4 since the fourth quarter of 2025.
-We aim to leverage ANTLR4's excellent portability to support multiple different programming languages.
-
-# Progress and Plan
-As of the end of October 2025, the Java-based parser is already capable of parsing all features of the CQL2 language, including those in TEXT and JSON formats.
-Additionally, we have implemented the translation of CQL2 language into SQL WHERE clauses using Java.
-We plan to gradually add support for other programming languages in the coming months.
 
 # Dependencies
 

@@ -1,7 +1,5 @@
 package ai.flexgalaxy.cql2;
 
-import ai.flexgalaxy.cql2.Cql2Lexer;
-import ai.flexgalaxy.cql2.Cql2Parser;
 import ai.flexgalaxy.cql2.ast.AstNode;
 import ai.flexgalaxy.cql2.converter.*;
 import ai.flexgalaxy.cql2.converter.sql.AstToSql;
@@ -44,9 +42,9 @@ public class Cql2G4 {
 
     public AstNode textToAst(String cqlText) {
         // text -> tokens -> parse tree
-        Cql2Lexer lexer = new Cql2Lexer(CharStreams.fromString(cqlText));
+        ai.flexgalaxy.cql2.Cql2Lexer lexer = new ai.flexgalaxy.cql2.Cql2Lexer(CharStreams.fromString(cqlText));
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        Cql2Parser parser = new Cql2Parser(tokens);
+        ai.flexgalaxy.cql2.Cql2Parser parser = new ai.flexgalaxy.cql2.Cql2Parser(tokens);
         ParseTree tree = parser.booleanExpression();
 
         // parse tree -> AST
