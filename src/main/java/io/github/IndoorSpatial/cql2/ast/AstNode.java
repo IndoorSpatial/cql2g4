@@ -4,9 +4,18 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+
+import org.locationtech.jts.geom.Geometry;
+
+import io.github.IndoorSpatial.cql2.converter.CustomGeometrySerializer;
 
 @Getter
 @Setter
@@ -34,6 +43,15 @@ public class AstNode {
     @JsonIgnore
     public boolean isLiteral() {
         return type.toString().endsWith("Literal");
+    }
+
+    public String ToJsonString() throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Geometry.class, new CustomGeometrySerializer());
+        objectMapper.registerModule(module);
+        return objectMapper.writeValueAsString(this);
     }
 
     public String ToString() {
