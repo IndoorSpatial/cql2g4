@@ -9,6 +9,10 @@ SQ    : '\'';
 DQ    : '"';
 COLON : ':';
 
+// https://github.com/opengeospatial/ogcapi-features/issues/972
+LB    : '[';
+RB    : ']';
+
 BOOL : 'TRUE' | 'FALSE' | 'true' | 'false';
 AND  : 'AND'  | 'and';
 OR   : 'OR'   | 'or';

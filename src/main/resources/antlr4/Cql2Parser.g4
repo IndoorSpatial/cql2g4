@@ -124,6 +124,7 @@ arrayExpression : array
 //  elements.
 array : LP RP
       | LP arrayElement (COMMA arrayElement)* RP
+      | LB arrayElement (COMMA arrayElement)* RB  // https://github.com/opengeospatial/ogcapi-features/issues/972
       ;
 
 //  An array element is either a character literal, a numeric literal,
