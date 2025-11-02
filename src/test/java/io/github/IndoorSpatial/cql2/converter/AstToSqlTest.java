@@ -37,13 +37,6 @@ class AstToSqlTest {
     private final static String projectRoot = System.getProperty("user.dir");
     private final static String resultPrefix = "src/test/";
 
-    public AstToSqlTest() {
-        objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(Geometry.class, new CustomGeometrySerializer());
-        objectMapper.registerModule(module);
-    }
-
     static Stream<String> testFiles() {
         String jsonPrefix = "schema/1.0/examples/json/";
         File dir = new File(jsonPrefix);

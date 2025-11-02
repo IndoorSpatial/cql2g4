@@ -9,6 +9,7 @@ import org.locationtech.jts.io.geojson.GeoJsonWriter;
 
 import java.io.IOException;
 
+// to print AstNode as json format
 public class CustomGeometrySerializer extends JsonSerializer<Geometry> {
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final GeoJsonWriter writer = new GeoJsonWriter();

@@ -27,13 +27,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class AstToTextTest {
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public AstToTextTest() {
-        objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(Geometry.class, new CustomGeometrySerializer());
-        objectMapper.registerModule(module);
-    }
-
     static Stream<String> testFiles() {
         String jsonPrefix = "schema/1.0/examples/json/";
         File dir = new File(jsonPrefix);

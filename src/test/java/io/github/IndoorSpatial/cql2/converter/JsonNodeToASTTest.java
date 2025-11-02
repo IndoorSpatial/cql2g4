@@ -28,13 +28,6 @@ class JsonNodeToASTTest {
     final JsonNodeToAST toAst = new JsonNodeToAST();
     final AstToJsonNode toJson = new AstToJsonNode();
 
-    public JsonNodeToASTTest() {
-        objectMapper.setDefaultPropertyInclusion(JsonInclude.Include.NON_NULL);
-        SimpleModule module = new SimpleModule();
-        module.addSerializer(Geometry.class, new CustomGeometrySerializer());
-        objectMapper.registerModule(module);
-    }
-
     static Stream<String> testFiles() {
         String jsonPrefix = "schema/1.0/examples/json/";
         File dir = new File(jsonPrefix);

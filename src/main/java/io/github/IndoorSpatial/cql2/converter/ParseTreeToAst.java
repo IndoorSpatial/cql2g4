@@ -3,12 +3,10 @@ package io.github.IndoorSpatial.cql2.converter;
 import io.github.IndoorSpatial.cql2.Cql2Parser;
 import io.github.IndoorSpatial.cql2.ast.AstNode;
 import io.github.IndoorSpatial.cql2.ast.AstNodeType;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
-import org.locationtech.jts.io.geojson.GeoJsonWriter;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -20,8 +18,6 @@ import java.util.List;
 import java.util.Locale;
 
 public class ParseTreeToAst extends io.github.IndoorSpatial.cql2.Cql2ParserBaseVisitor<AstNode> {
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final GeoJsonWriter writer = new GeoJsonWriter();
     private final WKTReader reader = new WKTReader();
     private final CommonTokenStream tokens;
     private final DateTimeFormatter formatter = new DateTimeFormatterBuilder()
@@ -32,7 +28,6 @@ public class ParseTreeToAst extends io.github.IndoorSpatial.cql2.Cql2ParserBaseV
 
     public ParseTreeToAst(CommonTokenStream tokens) {
         this.tokens = tokens;
-        writer.setEncodeCRS(false);
     }
 
     private AstNode Not(AstNode node) {
