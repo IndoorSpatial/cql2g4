@@ -1,0 +1,20 @@
+property1 = 'Hello' AND
+property2 = 3.2 AND
+func('World', 3, TRUE) AND
+speed - 150.0 > 0 AND
+create_date >= date('2025-11-02') AND
+geometry IS NOT NULL AND
+nickName LIKE 'Alic%' AND
+name not like 'Bob%' AND
+height between 1.2 AND 3.2 and
+city IN ('Shenzhen', 'Shanghai', 'Guangzhou') AND
+type not in (1,2,3) AND
+CASEI(road_class) IN (CASEI('Οδος'),CASEI('Straße')) AND
+ACCENTI(etat_vol) = ACCENTI('débárquér') AND
+S_INTERSECTS(geometry,POINT(36.319836 32.288087)) AND
+S_CROSSES(road,POLYGON((43.7286 -79.2986, 43.7311 -79.2996, 43.7323 -79.2972,
+                        43.7303 -79.2930, 43.7299 -79.2928, 43.7286 -79.2986))) AND
+T_INTERSECTS(event_time, INTERVAL('1969-07-16T05:32:00Z', '1969-07-24T16:50:35Z')) AND
+T_DURING(INTERVAL(touchdown, liftOff), INTERVAL('1969-07-16T13:32:00Z', '1969-07-24T16:50:35Z')) AND
+A_CONTAINS(layer:ids, ('layers-ca','layers-us')) AND
+vehicle_height > (bridge_clearance-1)
