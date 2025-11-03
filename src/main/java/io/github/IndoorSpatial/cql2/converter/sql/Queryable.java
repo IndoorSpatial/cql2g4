@@ -17,7 +17,6 @@ public class Queryable {
     String format;
     @JsonIgnore
     SqlType sqlType;
-    @JsonIgnore
     QueryableType queryableType;
 
     public Queryable(String name,  SqlType sqlType, QueryableType queryableType) {
@@ -36,11 +35,11 @@ public class Queryable {
         this.queryableType = queryableType;
     }
 
-    public Queryable(String name, String type) {
-        this(name, type, null, null, null, null, null);
+    public Queryable(String name, String type, QueryableType queryableType) {
+        this(name, type, null, null, null, null, queryableType);
     }
 
-    public static Queryable makeGeomQueryable(String name, String format) {
-        return new Queryable(name, null, null, null, format, SqlType.Geometry, null);
+    public static Queryable makeGeom(String name, String format, QueryableType queryableType) {
+        return new Queryable(name, null, null, null, format, SqlType.Geometry, queryableType);
     }
 }

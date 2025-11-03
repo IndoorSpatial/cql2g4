@@ -19,20 +19,25 @@ public class PropertyToQueryable {
         if (queryable.getQueryableType() == QueryableType.ColumnName)
             return '"' + propertyName + '"';
         if (queryable.getQueryableType() == QueryableType.JsonField) {
-            String sqlTypeString = switch (queryable.getSqlType()) {
-                case Integer -> "integer";
-                case Float -> "double";
-                case Text -> "text";
-                case Date -> "date";
-                case Timestamp -> "timestamp";
-                case Boolean -> "boolean";
-                case Geometry -> "geometry";
-            };
-            String result = String.format("(%s #> '{%s}')::%s", jsonColumnName, propertyName.replace('.', ','), sqlTypeString);
-            if (queryable.getSqlType() == SqlType.Text)
-                return "TRIM(BOTH '\"' FROM " + result + ")";
-            else
-                return result;
+            if (queryable.getSqlType() == SqlType.TextArray) {
+                return String.format("(SELECT ARRAY_AGG(elem) FROM jsonb_array_elements_text(%s #> '{%s}') AS elem)",  jsonColumnName, propertyName.replace('.', ','));
+            } else {
+                String sqlTypeString = switch (queryable.getSqlType()) {
+                    case Integer -> "integer";
+                    case Float -> "double";
+                    case Text -> "text";
+                    case Date -> "date";
+                    case Timestamp -> "timestamp";
+                    case Boolean -> "boolean";
+                    case Geometry -> "geometry";
+                    default -> throw new IllegalStateException("Unexpected value: " + queryable.getSqlType());
+                };
+                String result = String.format("(%s #> '{%s}')::%s", jsonColumnName, propertyName.replace('.', ','), sqlTypeString);
+                if (queryable.getSqlType() == SqlType.Text)
+                    return "TRIM(BOTH '\"' FROM " + result + ")";
+                else
+                    return result;
+            }
         }
 
         return null;

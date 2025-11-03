@@ -20,19 +20,18 @@ public class Main {
         System.out.println("convert to json: " + cql2G4.astToJsonString(astNode));
         System.out.println("convert to sql: " + cql2G4.astToSql(astNode));
 
-        String cqlWithPropertyName = "\"obj.key1\" = 'value1' AND \"obj.key2\" = 5";
+        String cqlWithPropertyName = "speed > 1.2 AND \"obj.key\" = 'value1' AND A_CONTAINS(obj.binlocations, ('A-1-2-01-a'))";
         System.out.println("another cql text: " + cqlWithPropertyName);
         AstNode astNode2 = cql2G4.textToAst(cqlWithPropertyName);
-        System.out.println("convert it to sql directly: " + cql2G4.astToSql(astNode2));
+        System.out.println("convert it to sql directly:\n" + cql2G4.astToSql(astNode2));
 
         HashMap<String, Queryable> queryables = new HashMap<>() {{
             put("speed", new Queryable("speed", SqlType.Float, QueryableType.ColumnName));
-            put("is_valid", new Queryable("is_valid", SqlType.Boolean, QueryableType.JsonField));
-            put("obj.key1", new Queryable("obj.key1", SqlType.Text, QueryableType.JsonField));
-            put("obj.key2", new Queryable("obj.key2", SqlType.Integer, QueryableType.JsonField));
+            put("obj.key", new Queryable("obj.key", SqlType.Text, QueryableType.JsonField));
+            put("obj.binlocations", new Queryable("obj.binlocations", SqlType.TextArray, QueryableType.JsonField));
         }};
         PropertyToQueryable propertyToQueryable = new PropertyToQueryable(queryables, "properties");
         Cql2G4 cql2G4WithQueryable = new Cql2G4(propertyToQueryable::toQueryable);
-        System.out.println("convert it to sql according to queryables: " +  cql2G4WithQueryable.astToSql(astNode2));
+        System.out.println("convert it to sql according to queryables:\n" +  cql2G4WithQueryable.astToSql(astNode2));
     }
 }
