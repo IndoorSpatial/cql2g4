@@ -1,11 +1,11 @@
 package io.github.IndoorSpatial.cql2.converter.sql;
 
-import java.util.HashMap;
+import java.util.Map;
 
 public class PropertyToQueryable {
-    private final HashMap<String, Queryable> queryables;
+    private final Map<String, Queryable> queryables;
 
-    public PropertyToQueryable(HashMap<String, Queryable> queryables) {
+    public PropertyToQueryable(Map<String, Queryable> queryables) {
         this.queryables = queryables;
     }
 
