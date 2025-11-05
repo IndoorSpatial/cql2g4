@@ -10,6 +10,7 @@ import io.github.IndoorSpatial.cql2.converter.sql.AstToSql;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Setter;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
@@ -23,6 +24,7 @@ public class Cql2G4 {
     private final AstToText astToText = new AstToText();
     private final AstToJsonNode astToJson = new AstToJsonNode();
     private final SqlDialect dialect;
+    private int srid = 4326;
 
     public Cql2G4() {
         this.dialect = SqlDialect.PostgreSQL;
@@ -42,6 +44,11 @@ public class Cql2G4 {
     public Cql2G4(Function<String, String> propertyToQueryable, SqlDialect sqlDialect) {
         this.dialect = sqlDialect;
         astToSql = new AstToSql(propertyToQueryable);
+    }
+
+    public void setSrid(int srid) {
+        this.srid = srid;
+        astToSql.setSrid(srid);
     }
 
     public AstNode textToAst(String cqlText) {

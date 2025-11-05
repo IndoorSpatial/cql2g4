@@ -3,6 +3,8 @@ package io.github.IndoorSpatial.cql2.converter.sql;
 import io.github.IndoorSpatial.cql2.ast.AstNode;
 import io.github.IndoorSpatial.cql2.ast.AstNodeType;
 import static io.github.IndoorSpatial.cql2.ast.AstNodeType.*;
+
+import lombok.Setter;
 import org.locationtech.jts.geom.Geometry;
 
 import java.util.HashMap;
@@ -45,6 +47,9 @@ public class AstToSql {
         return sb.toString();
     };
     final Function<AstNode, String> array = (node) -> arrayS.apply(node, "()");
+    @Setter
+    private int srid = 4326;
+
     public AstToSql() {
         this(null);
     }
@@ -179,7 +184,7 @@ public class AstToSql {
 
         typedConverters.put(GeometryLiteral, (node, pt) -> {
             Geometry geom = node.getValue();
-            return "ST_GeomFromText('" + geom.toText() + "')";
+            return "ST_GeomFromText('" + geom.toText() + "', " + srid + ")";
         });
 
         typedConverters.put(IntervalInstance, (node, pt) -> "TSRANGE(" +
@@ -196,12 +201,13 @@ public class AstToSql {
             double miny = bbox.get(1);
             double maxx = bbox.get(2);
             double maxy = bbox.get(3);
-            return String.format("ST_GeomFromText('POLYGON((%f %f, %f %f, %f %f, %f %f, %f %f))')",
+            return String.format("ST_GeomFromText('POLYGON((%f %f, %f %f, %f %f, %f %f, %f %f))', %d)",
                     minx, miny,
                     maxx, miny,
                     maxx, maxy,
                     minx, maxy,
-                    minx, miny
+                    minx, miny,
+                    srid
             );
         });
     }
