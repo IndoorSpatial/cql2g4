@@ -26,11 +26,11 @@ public class Main {
         System.out.println("convert it to sql directly:\n" + cql2G4.astToSql(astNode2));
 
         HashMap<String, Queryable> queryables = new HashMap<>() {{
-            put("speed", new Queryable("speed", SqlType.Float, QueryableType.ColumnName));
-            put("obj.key", new Queryable("obj.key", SqlType.Text, QueryableType.JsonField));
-            put("obj.binlocations", new Queryable("obj.binlocations", SqlType.TextArray, QueryableType.JsonField));
+            put("speed", new Queryable("speed", null, SqlType.Float));
+            put("obj.key", new Queryable("properties", "$.obj.key", SqlType.Text));
+            put("obj.binlocations", new Queryable("properties", "$.obj.binlocations[*]", SqlType.TextArray));
         }};
-        PropertyToQueryable propertyToQueryable = new PropertyToQueryable(queryables, "properties");
+        PropertyToQueryable propertyToQueryable = new PropertyToQueryable(queryables);
         Cql2G4 cql2G4WithQueryable = new Cql2G4(propertyToQueryable::toQueryable);
         System.out.println("convert it to sql according to queryables:\n" +  cql2G4WithQueryable.astToSql(astNode2));
     }

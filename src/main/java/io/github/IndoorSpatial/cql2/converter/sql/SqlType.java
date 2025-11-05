@@ -8,5 +8,6 @@ public enum SqlType {
     Timestamp,
     Boolean,
     Geometry,
-    TextArray
+    TextArray,
+    Unknown,
 }

@@ -15,31 +15,33 @@ public class Queryable {
     String title;
     String description;
     String format;
+    String column;
+    String jsonPath;
     @JsonIgnore
     SqlType sqlType;
-    QueryableType queryableType;
 
-    public Queryable(String name,  SqlType sqlType, QueryableType queryableType) {
-        this.name = name;
-        this.sqlType = sqlType;
-        this.queryableType = queryableType;
-    }
+    public Queryable() {}
 
-    public Queryable(String name, String type, String title, String description, String format, SqlType sqlType, QueryableType queryableType) {
+    public Queryable(String name, String type, String title, String description, String format, String column, String jsonPath, SqlType sqlType) {
         this.name = name;
         this.type = type;
         this.title = title;
         this.description = description;
         this.format = format;
+        this.column = column;
+        this.jsonPath = jsonPath;
         this.sqlType = sqlType;
-        this.queryableType = queryableType;
     }
 
-    public Queryable(String name, String type, QueryableType queryableType) {
-        this(name, type, null, null, null, null, queryableType);
+    public Queryable(String column, String jsonPath, SqlType sqlType) {
+        this(null, null, null, null, null, column, jsonPath, sqlType);
     }
 
-    public static Queryable makeGeom(String name, String format, QueryableType queryableType) {
-        return new Queryable(name, null, null, null, format, SqlType.Geometry, queryableType);
+    public Queryable(String name, String type, String column, String jsonPath, SqlType sqlType) {
+        this(name, type, null, null, null, column, jsonPath, sqlType);
+    }
+
+    public static Queryable makeGeom(String name, String format) {
+        return new Queryable(name, null, null, null, format, name, null, SqlType.Geometry);
     }
 }
