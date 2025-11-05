@@ -196,11 +196,11 @@ public class AstToSql {
         typedConverters.put(TimestampLiteral, (node, pt) -> "'" + node.getValue() + "'");
 
         typedConverters.put(BBoxLiteral, (node, pt) -> {
-            List<Double> bbox = node.getValue();
-            double minx = bbox.get(0);
-            double miny = bbox.get(1);
-            double maxx = bbox.get(2);
-            double maxy = bbox.get(3);
+            List<?> bbox = node.getValue();
+            double minx = ((Number)bbox.get(0)).doubleValue();
+            double miny = ((Number)bbox.get(1)).doubleValue();
+            double maxx = ((Number)bbox.get(2)).doubleValue();
+            double maxy = ((Number)bbox.get(3)).doubleValue();
             return String.format("ST_GeomFromText('POLYGON((%f %f, %f %f, %f %f, %f %f, %f %f))', %d)",
                     minx, miny,
                     maxx, miny,
