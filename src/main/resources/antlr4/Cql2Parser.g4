@@ -165,6 +165,7 @@ arithmeticOperand : numericLiteral
 //                          'Names and Tokens'.
 propertyName : Identifier
              | DQ Identifier DQ
+             | DQ QuoteIdentifier DQ
              ;
 
 // =============================================================================//

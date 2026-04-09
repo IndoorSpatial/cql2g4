@@ -6,7 +6,7 @@ COMMA : ',';
 DOT   : '.';
 DDOT  : '..';
 SQ    : '\'';
-DQ    : '"';
+DQ    : '"' -> pushMode(STRING_MODE);
 COLON : ':';
 
 // https://github.com/opengeospatial/ogcapi-features/issues/972
@@ -176,3 +176,8 @@ Whitespace : '\u0009'  //  Character tabulation
            | '\u3000'  //  Ideographic space
            ;
 WS : Whitespace+ -> channel(HIDDEN);
+
+mode STRING_MODE;
+    DQ_END : '"' -> popMode, type(DQ);
+    QuoteIdentifier : IdentifierStart IdentifierPart*
+                    | IdentifierStart;

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -18,11 +19,14 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 class Cql2G4Test {
     static Stream<String> testFiles() {
-        String textPrefix = "src/test/resources/marie/";
-        File dir = new File(textPrefix);
-        File[] files = dir.listFiles((f, name) -> name.endsWith(".txt"));
-        assertNotNull(files);
-        return Arrays.stream(files).map(f -> textPrefix + f.getName());
+        return Stream.of(
+                "src/test/resources/marie/",
+                "src/test/resources/github_issue/"
+        ).flatMap(prefix -> {
+            File[] files = new File(prefix).listFiles((f, name) -> name.endsWith(".txt"));
+            assert files != null;
+            return Arrays.stream(files).map(f -> prefix + f.getName());
+        });
     }
 
     @ParameterizedTest

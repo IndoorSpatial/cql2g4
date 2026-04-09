@@ -338,7 +338,9 @@ public class ParseTreeToJsonNode extends io.github.IndoorSpatial.cql2.Cql2Parser
 
     @Override
     public JsonNode visitPropertyName(Cql2Parser.PropertyNameContext ctx) {
-        return objectMapper.createObjectNode().put("property", ctx.Identifier().getText());
+        if (ctx.Identifier() != null) return objectMapper.createObjectNode().put("property", ctx.Identifier().getText());
+        if (ctx.QuoteIdentifier() != null) return objectMapper.createObjectNode().put("property", ctx.QuoteIdentifier().getText());
+        return null;
     }
 
     @Override

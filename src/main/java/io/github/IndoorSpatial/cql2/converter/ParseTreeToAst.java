@@ -316,7 +316,9 @@ public class ParseTreeToAst extends io.github.IndoorSpatial.cql2.Cql2ParserBaseV
 
     @Override
     public AstNode visitPropertyName(Cql2Parser.PropertyNameContext ctx) {
-        return new AstNode(AstNodeType.PropertyLiteral, ctx.Identifier().getText());
+        if (ctx.Identifier() != null) return new AstNode(AstNodeType.PropertyLiteral, ctx.Identifier().getText());
+        if (ctx.QuoteIdentifier() != null) return new AstNode(AstNodeType.PropertyLiteral, ctx.QuoteIdentifier().getText());
+        return null;
     }
 
     @Override
